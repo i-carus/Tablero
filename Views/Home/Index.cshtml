@@ -1,0 +1,24 @@
+﻿@{
+    ViewBag.Title = "Tablero";
+}
+
+<canvas id="c" width="900" height="400" style="border: 1px #000 solid; cursor: pointer; background-color: black;"></canvas>
+
+@section scripts
+{
+    <script src="~/Scripts/Tablero.js"></script>
+    <script>
+        var tablero;
+        $(function() {
+            tablero = new Tablero('c');
+
+            $('.color').click(function() {
+                tablero.changeColor($(this).find('i').css('color'));
+            });
+
+            $('.reset').click(function () {
+                tablero.createNew(900,400,'c');
+            });
+        });
+    </script>
+}

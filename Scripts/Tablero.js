@@ -51,7 +51,7 @@
     };
 
     var hookEvents = function () {
-        $(document).on('mousedown', '#' + thisCanvasId, function (e) {
+        $(document).on('mousedown touchstart', '#' + thisCanvasId, function (e) {
             startPaint(e.offsetX, e.offsetY);
             if (onMouseDown != null && typeof(onMouseDown) === 'function') {
                 onMouseDown(e.offsetX, e.offsetY);
@@ -59,14 +59,14 @@
                 
         });
 
-        $(document).on('mouseup', '#' + thisCanvasId, function (e) {
+        $(document).on('mouseup touchend', '#' + thisCanvasId, function (e) {
             endPaint();
             if (onMouseUp != null && typeof (onMouseUp) === 'function') {
                 onMouseUp();
             }
         });
 
-        $(document).on('mousemove', '#' + thisCanvasId, function (e) {
+        $(document).on('mousemove touchmove', '#' + thisCanvasId, function (e) {
             draw(e.offsetX, e.offsetY);
             if (onMouseMove != null && typeof(onMouseMove) === 'function') {
                 onMouseMove(e.offsetX, e.offsetY);
@@ -83,6 +83,7 @@
         $('<canvas id="' + id + '" width="' + width + '" height="' + height + '" style="border:1px #000 solid;cursor:pointer;background-color:black;"></canvas>').appendTo(parent);
         $('#' + thisCanvasId).remove();
         thisCanvasId = id;
+        mouseDown = false;
         init();
     };
 

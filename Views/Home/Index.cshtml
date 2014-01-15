@@ -21,15 +21,18 @@
             tablero.createNew(900, 400, 'c');
         };
         
-        tableroHub.client.startPaint = function (x,y) {
+        tableroHub.client.startPaint = function (x, y) {
+            
             tablero.startPaint(x, y);
         };
         
         tableroHub.client.endPaint = function () {
+            
             tablero.endPaint();
         };
         
-        tableroHub.client.draw = function (x,y) {
+        tableroHub.client.draw = function (x, y) {
+            
             tablero.draw(x,y);
         };
 
@@ -42,22 +45,27 @@
             // Wire up Send button to call NewContosoChatMessage on the server.
             
             //tableroHub.server.hello('hello world!');
+            tablero.onMouseDown = function (x, y) {
+
+                tableroHub.server.startPaint(x, y);
+            };
+            tablero.onMouseMove = function (x, y) {
+                tableroHub.server.draw(x, y);
+            };
+
+            tablero.onMouseUp = function() {
+                tableroHub.server.endPaint();
+            };
         });
 
         var tablero;
         $(function() {
             tablero = new Tablero('c');
-            tablero.onMouseDown = function (x, y) {
-                
-                tableroHub.server.startPaint(x,y);
-            };
-            tablero.onMouseMove = function(x, y) {
-                tableroHub.server.draw(x, y);
-            };
-            
-            tablero.onMouseUp = function() {
-                tableroHub.server.endPaint();
-            }
+
+            //prevent scrolling
+            document.body.addEventListener('touchmove', function (event) {
+                event.preventDefault();
+            }, false);
 
             $('.color').click(function () {
                 var color = $(this).find('i').css('color');

@@ -161,8 +161,6 @@
             x = event.touches[0].pageX;
             y = event.touches[0].pageY;
         }
-        console.log(x);
-        console.log(y);
         return { x: x, y: y };
     }
 

@@ -21,6 +21,7 @@
         var x = Math.floor(x1) + 0.5;
         var y = Math.floor(y1) + 0.5;
         context.lineTo(x, y);
+        
         if (mouseDown)
             context.stroke();
     };
@@ -52,9 +53,16 @@
 
     var hookEvents = function () {
         $(document).on('mousedown touchstart', '#' + thisCanvasId, function (e) {
-            startPaint(e.offsetX, e.offsetY);
+            var event = window.event;
+            var x = e.offsetX;
+            var y = e.offsetY;
+            if (event.touches) {
+                x = event.touches[0].pageX;
+                y = event.touches[0].pageY;
+            }
+            startPaint(x, y);
             if (onMouseDown != null && typeof(onMouseDown) === 'function') {
-                onMouseDown(e.offsetX, e.offsetY);
+                onMouseDown(x, y);
             }
                 
         });
@@ -67,9 +75,17 @@
         });
 
         $(document).on('mousemove touchmove', '#' + thisCanvasId, function (e) {
-            draw(e.offsetX, e.offsetY);
+            //alert(e.pageX);
+            var event = window.event;
+            var x = e.offsetX;
+            var y = e.offsetY;
+            if (event.touches) {
+                x = event.touches[0].pageX;
+                y = event.touches[0].pageY;
+            }
+            draw(x,y);
             if (onMouseMove != null && typeof(onMouseMove) === 'function') {
-                onMouseMove(e.offsetX, e.offsetY);
+                onMouseMove(x, y);
             }
         });
     };

@@ -3,7 +3,7 @@
 }
 
 <canvas id="c" width="900" height="400" style="border: 1px #000 solid; cursor: pointer; background-color: black;"></canvas>
-
+<div id="log" style="width:200px; max-height:90px; overflow:scroll;"></div>
 @section scripts
 {
     <script src="~/Scripts/Tablero.js"></script>
@@ -61,6 +61,7 @@
         var tablero;
         $(function() {
             tablero = new Tablero('c');
+            var counter = 0;
 
             //prevent scrolling
             document.body.addEventListener('touchmove', function (event) {

@@ -42,42 +42,45 @@
 
 
         $.connection.hub.start().done(function() {
-            // Wire up Send button to call NewContosoChatMessage on the server.
             
-            //tableroHub.server.hello('hello world!');
-            tablero.onMouseDown = function (x, y) {
+            ////tableroHub.server.hello('hello world!');
+            //tablero.onMouseDown = function (x, y) {
 
-                tableroHub.server.startPaint(x, y);
-            };
-            tablero.onMouseMove = function (x, y) {
-                tableroHub.server.draw(x, y);
-            };
+            //    tableroHub.server.startPaint(x, y);
+            //};
+            //tablero.onMouseMove = function (x, y) {
+            //    tableroHub.server.draw(x, y);
+            //};
 
-            tablero.onMouseUp = function() {
-                tableroHub.server.endPaint();
-            };
+            //tablero.onMouseUp = function() {
+            //    tableroHub.server.endPaint();
+            //};
         });
 
-        var tablero;
-        $(function() {
-            tablero = new Tablero('c');
-            var counter = 0;
+        //var tablero;
+        $(function () {
 
-            //prevent scrolling
-            document.body.addEventListener('touchmove', function (event) {
-                event.preventDefault();
-            }, false);
+            var tablero = $('#c').Tablero();
+            console.log(tablero);
 
-            $('.color').click(function () {
-                var color = $(this).find('i').css('color');
-                tablero.changeColor(color);
-                tableroHub.server.changeColor(color);
-            });
+            //tablero = new Tablero('c');
+            //var counter = 0;
 
-            $('.reset').click(function() {
-                tablero.createNew(900, 400, 'c');
-                tableroHub.server.createNewTablero();
-            });
+            ////prevent scrolling
+            //document.body.addEventListener('touchmove', function (event) {
+            //    event.preventDefault();
+            //}, false);
+
+            //$('.color').click(function () {
+            //    var color = $(this).find('i').css('color');
+            //    tablero.changeColor(color);
+            //    tableroHub.server.changeColor(color);
+            //});
+
+            //$('.reset').click(function() {
+            //    tablero.createNew(900, 400, 'c');
+            //    tableroHub.server.createNewTablero();
+            //});
         });
     </script>
 }

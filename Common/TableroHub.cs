@@ -13,9 +13,9 @@ namespace Tablero.Common
             Clients.All.hello(something + " coming from the server!");
         }
 
-        public void CreateNewTablero()
+        public void Reset()
         {
-            Clients.Others.createNewTablero();
+            Clients.Others.reset();
         }
 
         public void StartPaint(int x, int y)

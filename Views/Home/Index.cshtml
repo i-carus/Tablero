@@ -3,7 +3,7 @@
 }
 
 <canvas id="c" width="900" height="400" style="border: 1px #000 solid; cursor: pointer; background-color: black;"></canvas>
-<div id="log" style="width:200px; max-height:90px; overflow:scroll;"></div>
+<div id="log" style="width: 200px; max-height: 90px; overflow: scroll;"></div>
 @section scripts
 {
     <script src="~/Scripts/Tablero.js"></script>
@@ -12,75 +12,80 @@
     <script src="~/signalr/hubs"></script>
     <script>
 
-        var tableroHub = $.connection.tableroHub;
-        tableroHub.client.hello = function(received) {
-            
-        };
-
-        tableroHub.client.createNewTablero = function(received) {
-            tablero.createNew(900, 400, 'c');
-        };
         
-        tableroHub.client.startPaint = function (x, y) {
-            
-            tablero.startPaint(x, y);
-        };
-        
-        tableroHub.client.endPaint = function () {
-            
-            tablero.endPaint();
-        };
-        
-        tableroHub.client.draw = function (x, y) {
-            
-            tablero.draw(x,y);
-        };
-
-        tableroHub.client.changeColor = function (color) {
-            tablero.changeColor(color);
-        };
-
-
-        $.connection.hub.start().done(function() {
-            
-            ////tableroHub.server.hello('hello world!');
-            //tablero.onMouseDown = function (x, y) {
-
-            //    tableroHub.server.startPaint(x, y);
-            //};
-            //tablero.onMouseMove = function (x, y) {
-            //    tableroHub.server.draw(x, y);
-            //};
-
-            //tablero.onMouseUp = function() {
-            //    tableroHub.server.endPaint();
-            //};
-        });
+     
 
         //var tablero;
-        $(function () {
+        $(function() {
 
-            var tablero = $('#c').Tablero();
-            console.log(tablero);
+            var tablero = null;
+            
+            var tableroHub = $.connection.tableroHub;
+            
+           
+            tableroHub.client.reset = function (received) {
+                tablero.reset();
+            };
 
-            //tablero = new Tablero('c');
-            //var counter = 0;
+            tableroHub.client.startPaint = function (x, y) {
+                tablero.startPaint(x, y);
+                
+            };
 
-            ////prevent scrolling
-            //document.body.addEventListener('touchmove', function (event) {
-            //    event.preventDefault();
-            //}, false);
+            tableroHub.client.endPaint = function () {
 
-            //$('.color').click(function () {
-            //    var color = $(this).find('i').css('color');
-            //    tablero.changeColor(color);
-            //    tableroHub.server.changeColor(color);
-            //});
+                tablero.endPaint();
+            };
 
-            //$('.reset').click(function() {
-            //    tablero.createNew(900, 400, 'c');
-            //    tableroHub.server.createNewTablero();
-            //});
+            tableroHub.client.draw = function (x, y) {
+
+                tablero.draw(x, y);
+            };
+
+            tableroHub.client.changeColor = function (color) {
+                tablero.changeColor(color);
+            };
+
+
+
+            $.connection.hub.start().done(function() {
+
+                tablero = $('#c').Tablero({
+                    remoteStartPaint: function (x, y) {
+                        tableroHub.server.startPaint(x, y);
+                    },
+                    remoteEndPaint: function () {
+                        tableroHub.server.endPaint();
+                    },
+                    remoteDraw: function (x, y) {
+                        tableroHub.server.draw(x, y);
+                    }
+                });
+
+               
+               
+               
+            });
+            
+            $('.reset').click(function () {
+                tableroHub.server.reset();
+                console.log(tablero);
+                tablero.reset();
+            });
+
+           
+            //prevent scrolling
+            document.body.addEventListener('touchmove', function (event) {
+                event.preventDefault();
+            }, false);
+
+            $('.color').click(function () {
+                var color = $(this).find('i').css('color');
+                tablero.changeColor(color);
+                tableroHub.server.changeColor(color);
+            });
+
+          
         });
     </script>
 }

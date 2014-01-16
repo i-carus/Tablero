@@ -28,12 +28,13 @@
             };
 
             tableroHub.client.startPaint = function (x, y) {
+                
                 tablero.startPaint(x, y);
                 
             };
 
             tableroHub.client.endPaint = function () {
-
+                tablero.unlock();
                 tablero.endPaint();
             };
 

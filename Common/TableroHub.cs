@@ -18,20 +18,12 @@ namespace Tablero.Common
             Clients.Others.reset();
         }
 
-        public void StartPaint(int x, int y)
+        public void Draw(List<Point> coords)
         {
-            Clients.Others.startPaint(x,y);
+            Clients.Others.draw(coords);
         }
 
-        public void Draw(int x, int y)
-        {
-            Clients.Others.draw(x, y);
-        }
-
-        public void EndPaint()
-        {
-            Clients.Others.endPaint();
-        }
+       
 
         public void ChangeColor(string color)
         {

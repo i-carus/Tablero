@@ -27,20 +27,20 @@
                 tablero.reset();
             };
 
-            tableroHub.client.startPaint = function (x, y) {
+            //tableroHub.client.startPaint = function (x, y) {
                 
-                tablero.startPaint(x, y);
+            //    tablero.startPaint(x, y);
                 
-            };
+            //};
 
-            tableroHub.client.endPaint = function () {
-                tablero.unlock();
-                tablero.endPaint();
-            };
+            //tableroHub.client.endPaint = function () {
+               
+            //    tablero.endPaint();
+            //};
 
-            tableroHub.client.draw = function (x, y) {
-
-                tablero.draw(x, y);
+            tableroHub.client.draw = function (coords) {
+               
+                tablero.draw(coords);
             };
 
             tableroHub.client.changeColor = function (color) {
@@ -52,14 +52,14 @@
             $.connection.hub.start().done(function() {
 
                 tablero = $('#c').Tablero({
-                    remoteStartPaint: function (x, y) {
-                        tableroHub.server.startPaint(x, y);
-                    },
-                    remoteEndPaint: function () {
-                        tableroHub.server.endPaint();
-                    },
-                    remoteDraw: function (x, y) {
-                        tableroHub.server.draw(x, y);
+                    //remoteStartPaint: function (x, y) {
+                    //    tableroHub.server.startPaint(x, y);
+                    //},
+                    //remoteEndPaint: function () {
+                    //    tableroHub.server.endPaint();
+                    //},
+                    remoteDraw: function (coords) {
+                        tableroHub.server.draw(coords);
                     }
                 });
 

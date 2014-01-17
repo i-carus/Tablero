@@ -1,8 +1,7 @@
 ﻿(function ($) {
 
     $.fn.Tablero = function (options) {
-
-
+        
         var canvas = null;
         var context = null;
 
@@ -13,15 +12,12 @@
             return context;
         };
 
+        $.extend(this, { coordinates: [] });
+
+        
         init.call(this, options);
 
-        this.lock = function () {
-            this.locked = true;
-        };
-
-        this.unlock = function () {
-            this.locked = false;
-        };
+      
 
         this.reset = function () {
             window.location.reload();
@@ -31,23 +27,17 @@
             getCurrentContext.call(this).strokeStyle = color;
         };
 
-        ///These are all methods that are called remotely if the user provides
-        this.startPaint = function (x, y) {
-
-            startPaintRemote(x, y);
-        };
-
-        this.endPaint = function () {
-
-            endPaintRemote();
-        };
-
-        this.draw = function (x, y) {
-
-            drawRemote(x, y);
+       
+        this.draw = function (coords) {
+            
+            drawRemote(coords);
         };
 
         return this;
+        
+
+       
+        
 
     };
 
@@ -62,44 +52,49 @@
         return { x: x, y: y };
     };
 
-    var hookEvents = function (options) {
-        
-
-        $(this).on('mousedown touchstart', function (e) {
-
-            var coords = getCoordinates(e);
-            startPaint(coords.x, coords.y);
-            if (options.remoteStartPaint !== undefined) {
-                options.remoteStartPaint.call(this, coords.x, coords.y);
-            }
-        });
-
-        $(this).on('mouseup touchend',function (e) {
-            endPaint();
-            if (options.remoteEndPaint !== undefined) {
-                options.remoteEndPaint.call();
-            }
-        });
-
-        $(this).on('mousemove touchmove',  function (e) {
-            var coords = getCoordinates(e);
-            //console.log(this);
-            draw(coords.x, coords.y);
-            if (options.remoteDraw !== undefined) {
-                options.remoteDraw.call(this, coords.x, coords.y);
-            }
-        });
-
-    };
-
     var init = function (options) {
+       
         var selector = $(this).attr('id');
+        var coordinates = [];
         canvas = document.getElementById(selector);
         context = canvas.getContext("2d");
+        $.extend(this,coordinates);
         if (context)
             context.strokeStyle = "White";
         hookEvents.call(this, options);
     };
+
+    var hookEvents = function (options) {
+        
+        $(this).on('mousedown touchstart', this.coordinates,function (e) {
+            var coords = getCoordinates(e);
+            startPaint(coords.x, coords.y);
+            e.data.push(coords);
+            
+          
+        });
+
+        $(this).on('mouseup touchend',this.coordinates,function (e) {
+            endPaint();
+            
+            if (options.remoteDraw !== undefined) {
+                options.remoteDraw.call(this,e.data);
+            }
+            e.data.length = 0;//reset the points
+        });
+
+        $(this).on('mousemove touchmove', this.coordinates, function (e) {
+            
+            var coords = getCoordinates(e);
+
+            if (draw(coords.x, coords.y))
+                e.data.push(coords);
+           
+        });
+
+    };
+
+  
 
     var startPaint = function (x, y) {
 
@@ -114,37 +109,25 @@
 
     };
 
+    //returns true or false to indicate whether the action really drew something or not.
     var draw = function (x1, y1) {
-        //console.log((this));
-
         var x = Math.floor(x1) + 0.5;
         var y = Math.floor(y1) + 0.5;
         context.lineTo(x, y);
         if (this.mouseDown)
             context.stroke();
-
+        return this.mouseDown;
     };
 
 
-    var startPaintRemote = function (x, y) {
-        this.mouseDownRemote = true;
-        context.lineWidth = 1;
+
+    var drawRemote = function (coordinates) {
+        
         context.beginPath();
-        context.moveTo(x, y);
-    };
-
-    var endPaintRemote = function () {
-        this.mouseDownRemote = false;
-
-    };
-
-    var drawRemote = function (x1, y1) {
-        var x = Math.floor(x1) + 0.5;
-        var y = Math.floor(y1) + 0.5;
-        context.lineTo(x, y);
-        if (this.mouseDownRemote)
-            context.stroke();
-
+        for (var i = 0; i < coordinates.length; i++) {
+            context.lineTo(Math.floor(coordinates[i].X) + 0.5, Math.floor(coordinates[i].Y) + 0.5);
+        }
+        context.stroke();
     };
 
 

@@ -19,24 +19,11 @@
         $(function() {
 
             var tablero = null;
-            
             var tableroHub = $.connection.tableroHub;
-            
            
             tableroHub.client.reset = function (received) {
                 tablero.reset();
             };
-
-            //tableroHub.client.startPaint = function (x, y) {
-                
-            //    tablero.startPaint(x, y);
-                
-            //};
-
-            //tableroHub.client.endPaint = function () {
-               
-            //    tablero.endPaint();
-            //};
 
             tableroHub.client.draw = function (coords) {
                
@@ -52,25 +39,15 @@
             $.connection.hub.start().done(function() {
 
                 tablero = $('#c').Tablero({
-                    //remoteStartPaint: function (x, y) {
-                    //    tableroHub.server.startPaint(x, y);
-                    //},
-                    //remoteEndPaint: function () {
-                    //    tableroHub.server.endPaint();
-                    //},
                     remoteDraw: function (coords) {
                         tableroHub.server.draw(coords);
                     }
-                });
-
-               
-               
-               
+                });               
             });
             
             $('.reset').click(function () {
                 tableroHub.server.reset();
-                console.log(tablero);
+                
                 tablero.reset();
             });
 

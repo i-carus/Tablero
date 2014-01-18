@@ -22,6 +22,12 @@ namespace Tablero
             bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
                         "~/Scripts/bootstrap.js*"));
 
+            bundles.Add(new ScriptBundle("~/bundles/tablero").Include(
+                       "~/Scripts/Tablero.js*"));
+
+            bundles.Add(new ScriptBundle("~/bundles/signalr").Include(
+                       "~/Scripts/jquery.signalR-2.0.1.js"));
+
             //// Use the development version of Modernizr to develop with and learn from. Then, when you're
             //// ready for production, use the build tool at http://modernizr.com to pick only the tests you need.
             //bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(

@@ -18,9 +18,9 @@ namespace Tablero.Common
             Clients.Others.reset();
         }
 
-        public void Draw(List<Point> coords)
+        public void Draw(List<Point> coords, int lineWidth)
         {
-            Clients.Others.draw(coords);
+            Clients.Others.draw(coords, lineWidth);
         }
 
        

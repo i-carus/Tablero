@@ -27,17 +27,30 @@
             getCurrentContext.call(this).strokeStyle = color;
         };
 
+        this.changeBackgroundColor = function (color) {
+            $(this).css('background-color', color);
+        };
        
-        this.draw = function (coords) {
-            
-            drawRemote(coords);
+        this.draw = function (coords, lineWidth) {
+            drawRemote(coords,lineWidth);
+        };
+
+        this.eraser = function () {
+
+            var con = getCurrentContext.call(this);
+            console.log(con.lineWidth);
+           if(con.lineWidth==1)
+               con.lineWidth = 20;
+            else
+               con.lineWidth = 1;
+        };
+        
+        this.exportImage = function () {
+            var dataURL = canvas.toDataURL();
+            window.open(dataURL);
         };
 
         return this;
-        
-
-       
-        
 
     };
 
@@ -78,7 +91,7 @@
             endPaint();
             
             if (options.remoteDraw !== undefined) {
-                options.remoteDraw.call(this,e.data);
+                options.remoteDraw.call(this,e.data, context.lineWidth);
             }
             e.data.length = 0;//reset the points
         });
@@ -99,7 +112,7 @@
     var startPaint = function (x, y) {
 
         this.mouseDown = true;
-        context.lineWidth = 1;
+        //context.lineWidth = 1;
         context.beginPath();
         context.moveTo(x, y);
     };
@@ -121,13 +134,16 @@
 
 
 
-    var drawRemote = function (coordinates) {
-        
+    var drawRemote = function (coordinates, lineWidth) {
+        console.log(lineWidth);
+        var currentWidth = context.lineWidth;
+        context.lineWidth = lineWidth;
         context.beginPath();
         for (var i = 0; i < coordinates.length; i++) {
             context.lineTo(Math.floor(coordinates[i].X) + 0.5, Math.floor(coordinates[i].Y) + 0.5);
         }
         context.stroke();
+        context.lineWidth = currentWidth;
     };
 
 

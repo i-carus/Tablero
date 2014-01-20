@@ -4,6 +4,7 @@
         
         var canvas = null;
         var context = null;
+        
         var ignore = [];
         var getCurrentContext = function () {
             var selector = $(this).attr('id');
@@ -24,8 +25,10 @@
         };
 
         this.reset = function (from) {
-            if (!this.isUserIgnored(from))
-              window.location.reload();
+            if (!this.isUserIgnored(from)) {
+                context = getCurrentContext.call(this);
+                context.clearRect(0, 0, $(this).width(), $(this).height());
+            }
         };
 
         this.changeColor = function (color) {
@@ -89,6 +92,8 @@
         var coordinates = [];
         canvas = document.getElementById(selector);
         context = canvas.getContext("2d");
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
         $.extend(this,coordinates);
         if (context)
             context.strokeStyle = "White";
@@ -96,7 +101,13 @@
     };
 
     var hookEvents = function (options) {
-        
+
+        //we need to handle window resizes to accomodate for canvas width and height properly
+        $(window).resize(function () {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;            
+        });
+
         $(this).on('mousedown touchstart', this.coordinates,function (e) {
             var coords = getCoordinates(e);
             startPaint(coords.x, coords.y);
@@ -128,16 +139,13 @@
   
 
     var startPaint = function (x, y) {
-
         this.mouseDown = true;
-        //context.lineWidth = 1;
         context.beginPath();
         context.moveTo(x, y);
     };
 
     var endPaint = function () {
         this.mouseDown = false;
-
     };
 
     //returns true or false to indicate whether the action really drew something or not.

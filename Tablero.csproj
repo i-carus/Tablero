@@ -190,6 +190,7 @@
     <Content Include="Content\jquery.mobile.structure-1.3.2.min.css" />
     <Content Include="Content\jquery.mobile.theme-1.3.2.css" />
     <Content Include="Content\jquery.mobile.theme-1.3.2.min.css" />
+    <Content Include="Content\pick-a-color-1.1.8.min.css" />
     <Content Include="Content\themes\base\images\animated-overlay.gif" />
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
@@ -288,7 +289,9 @@
     <Content Include="Scripts\knockout-3.0.0.debug.js" />
     <Content Include="Scripts\knockout-3.0.0.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Scripts\pick-a-color-1.1.8.min.js" />
     <Content Include="Scripts\Tablero.js" />
+    <Content Include="Scripts\tinycolor-0.9.15.min.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

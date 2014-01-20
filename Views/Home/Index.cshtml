@@ -2,19 +2,19 @@
     ViewBag.Title = "Tablero";
 }
 
-<canvas id="c" width="670" height="400" style="border: 1px #000 solid; cursor: pointer; background-color: black;"></canvas>
+
+<div style="position: relative; width: 100%; height: 100%;">
+
+    <canvas id="c" style="border: 1px #000 solid; cursor: pointer; background-color: black; width: 100%; height: 50%;"></canvas>
+
+</div>
+
 <div class="btn-toolbar" role="toolbar">
+   
     <div class="btn-group btn-group-lg">
-        <button type="button" class="btn btn-default color"><span class="glyphicon glyphicon-stop" data-toggle="tooltip" data-placement="bottom" title="Green" style="color: green;"></span></button>
-        <button type="button" class="btn btn-default color"><span class="glyphicon glyphicon-stop" data-toggle="tooltip" data-placement="bottom" title="Red" style="color: red;"></span></button>
-        <button type="button" class="btn btn-default color"><span class="glyphicon glyphicon-stop " data-toggle="tooltip" data-placement="bottom" title="Yellow" style="color: yellow;"></span></button>
-        <button type="button" class="btn btn-default color"><span class="glyphicon glyphicon-stop " data-toggle="tooltip" data-placement="bottom" title="Blue" style="color: blue;"></span></button>
-        <button type="button" class="btn btn-default color"><span class="glyphicon glyphicon-stop " data-toggle="tooltip" data-placement="bottom" title="Magenta" style="color: magenta;"></span></button>
-        <button type="button" class="btn btn-default color"><span class="glyphicon glyphicon-unchecked " data-toggle="tooltip" data-placement="bottom" title="White" style="color: papayawhip;"></span></button>
-        <button type="button" class="btn btn-default color"><span class="glyphicon glyphicon-stop " data-toggle="tooltip" data-placement="bottom" title="Black" style="color: black;"></span></button>
-        <button type="button" class="btn btn-default color"><span class="glyphicon glyphicon-stop " data-toggle="tooltip" data-placement="bottom" title="Brown" style="color: brown;"></span></button>
+         <input type="text" value="white" id="fore-color" class="pick-a-color">
     </div>
-    <div class="btn-group btn-group-lg">
+    <div class="btn-group btn-group-sm">
         <button type="button" class="btn btn-default reset"><span class="glyphicon glyphicon-trash " data-toggle="tooltip" data-placement="bottom" title="Reset - erases everything" style="color: black;"></span></button>
         <button type="button" class="btn btn-default eraser"><span class="glyphicon glyphicon-minus-sign " data-toggle="tooltip" data-placement="bottom" title="Eraser - increases line width" style="color: black;"></span></button>
         <button type="button" class="btn btn-default export"><span class="glyphicon glyphicon-floppy-disk" data-toggle="tooltip" data-placement="bottom" title="Save drawing"></span></button>
@@ -30,7 +30,7 @@
         </ul>
     </div>
 </div>
-<br/>
+<br />
 <div class="modal fade" id="modal_name">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -65,23 +65,23 @@
     <script src="~/signalr/hubs"></script>
     <script>
 
-        $(function() {
+        $(function () {
             var tablero = null;
             var tableroHub = $.connection.tableroHub;
             var name = $.cookie('name');
 
-            var connect = function() {
-                $.connection.hub.start().done(function() {
+            var connect = function () {
+                $.connection.hub.start().done(function () {
                     tablero = $('#c').Tablero({
-                        remoteDraw: function(coords, width) {
+                        remoteDraw: function (coords, width) {
                             tableroHub.server.draw(coords, width);
                         }
                     });
-                }).then(function() {
+                }).then(function () {
 
                     tableroHub.server.getConnectedUsers(name);
                     $('#user_name').text('Welcome, ' + name.substring(0, 1).toUpperCase() + name.substring(1));
-                }).fail(function(error) {
+                }).fail(function (error) {
 
                     console.log(error);
                 });
@@ -92,7 +92,7 @@
             } else
                 connect();
 
-            $('#ok-name').click(function() {
+            $('#ok-name').click(function () {
                 name = $('#name-text').val();
 
                 if (name == '') {
@@ -105,62 +105,64 @@
                 }
             });
 
+            $(".pick-a-color").pickAColor({ showHexInput: false });
+
+            $('#fore-color').on('change', function () {
+                tablero.changeColor($(this).val());
+                tableroHub.server.changeColor($(this).val());
+            });
+
+
             $('span[data-toggle="tooltip"]').tooltip();
 
 
-            tableroHub.client.reset = function(sender) {
+            tableroHub.client.reset = function (sender) {
                 tablero.reset(sender);
             };
 
-            tableroHub.client.draw = function(coords, lineWidth, from) {
-                
-                tablero.draw(coords, lineWidth,from);
+            tableroHub.client.draw = function (coords, lineWidth, from) {
+
+                tablero.draw(coords, lineWidth, from);
             };
 
-            tableroHub.client.changeColor = function(color) {
+            tableroHub.client.changeColor = function (color) {
                 tablero.changeColor(color);
             };
 
-            tableroHub.client.listConnectedUsers = function(users) {
+            tableroHub.client.listConnectedUsers = function (users) {
                 var content = '';
-                $.each(users, function(index, value) {
-                    content += $('<a/>').text(value).addClass('list-group-item').append('<input type="checkbox" '+(tablero.isUserIgnored(value)==false?'checked="checked"':'')+'" class="block" />').wrapInner('<label>').wrapInner('<div class="checkbox"/>')[0].outerHTML;
+                $.each(users, function (index, value) {
+                    content += $('<a/>').text(value).addClass('list-group-item').append('<input type="checkbox" ' + (tablero.isUserIgnored(value) == false ? 'checked="checked"' : '') + '" class="block" />').wrapInner('<label>').wrapInner('<div class="checkbox"/>')[0].outerHTML;
 
                 });
                 $('#status').html('<ul class="list-group">' + content + '</ul>');
             };
 
-            $('.reset').click(function() {
+            $('.reset').click(function () {
                 tableroHub.server.reset();
 
                 tablero.reset();
             });
 
-            $('.eraser').click(function() {
+            $('.eraser').click(function () {
                 tablero.eraser();
             });
 
-            $('.switch-back').click(function() {
+            $('.switch-back').click(function () {
                 tablero.changeBackgroundColor($(this).text());
 
             });
 
-            $('.export').click(function() {
+            $('.export').click(function () {
                 tablero.exportImage();
             });
 
             //prevent scrolling
-            document.body.addEventListener('touchmove', function(event) {
+            document.body.addEventListener('touchmove', function (event) {
                 event.preventDefault();
             }, false);
 
-            $('.color').click(function() {
-                var color = $(this).find('span').css('color');
-                tablero.changeColor(color);
-                tableroHub.server.changeColor(color);
-            });
-
-            $(document).on('click','.block',function () {
+            $(document).on('click', '.block', function () {
                 var user = $(this).parent().text();
                 if (this.checked) {
                     tablero.unblock(user);
@@ -168,8 +170,6 @@
                     tablero.block(user);
                 }
             });
-
-
         });
     </script>
 }

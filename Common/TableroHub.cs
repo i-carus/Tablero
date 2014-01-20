@@ -26,6 +26,18 @@ namespace Tablero.Common
 
         public override Task OnDisconnected()
         {
+            BroadcastListOfUsers();
+            return base.OnDisconnected();
+        }
+
+        public override Task OnReconnected()
+        {
+            BroadcastListOfUsers();
+            return base.OnReconnected();
+        }
+
+        private void BroadcastListOfUsers()
+        {
             string key = "";
             foreach (var item in groups)
             {
@@ -38,8 +50,9 @@ namespace Tablero.Common
             string connID = null;
             groups.TryRemove(key, out connID);
             Clients.All.ListConnectedUsers(groups.Keys.ToList());
-            return base.OnDisconnected();
         }
+
+      
 
 
         public void GetConnectedUsers(string name)

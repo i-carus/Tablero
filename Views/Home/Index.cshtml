@@ -39,7 +39,7 @@
                 <h4 class="modal-title">What's your name?</h4>
             </div>
             <div class="modal-body">
-                <p>Please tell me your name before we start:</p>
+                <p>I need it before we start:</p>
                 <input type="text" id="name-text" class="form-control" placeholder="Enter name or nickname" />
             </div>
             <div class="modal-footer">
@@ -80,7 +80,7 @@
                 }).then(function() {
 
                     tableroHub.server.getConnectedUsers(name);
-                    $('#user_name').text('Bienvenido, ' + name.substring(0, 1).toUpperCase() + name.substring(1));
+                    $('#user_name').text('Welcome, ' + name.substring(0, 1).toUpperCase() + name.substring(1));
                 }).fail(function(error) {
 
                     console.log(error);

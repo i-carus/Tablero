@@ -9,10 +9,10 @@ namespace Tablero
         public static void RegisterBundles(BundleCollection bundles)
         {
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
-                        "~/Scripts/jquery-{version}.js"));
+                        "~/Scripts/jquery-{version}.js","~/Scripts/jquery.cookie.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
-                        "~/Scripts/jquery-ui-{version}.js", "~/Scripts/jquery.mobile-1.3.2.js"));
+                "~/Scripts/jquery-ui-{version}.js"));//, "~/Scripts/jquery.mobile-1.3.2.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
                         "~/Scripts/jquery.unobtrusive*",

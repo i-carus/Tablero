@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Tablero - Mariana Sánchez";
+    ViewBag.Title = "Tablero";
 }
 
 <canvas id="c" width="670" height="400" style="border: 1px #000 solid; cursor: pointer; background-color: black;"></canvas>
@@ -30,7 +30,32 @@
         </ul>
     </div>
 </div>
-<div id="status"></div>
+<br/>
+<div class="modal fade" id="modal_name">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+
+                <h4 class="modal-title">What's your name?</h4>
+            </div>
+            <div class="modal-body">
+                <p>Please tell me your name before we start:</p>
+                <input type="text" id="name-text" class="form-control" placeholder="Enter name or nickname" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="ok-name">OK</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+<div class="list-group">
+    <a href="#" class="list-group-item active">Users (uncheck to ignore updates from him/her)
+    </a>
+    <div id="status"></div>
+</div>
 @section scripts
 {
     @Scripts.Render("~/bundles/Tablero")
@@ -40,35 +65,70 @@
     <script src="~/signalr/hubs"></script>
     <script>
 
-        //var tablero;
         $(function() {
+            var tablero = null;
+            var tableroHub = $.connection.tableroHub;
+            var name = $.cookie('name');
+
+            var connect = function() {
+                $.connection.hub.start().done(function() {
+                    tablero = $('#c').Tablero({
+                        remoteDraw: function(coords, width) {
+                            tableroHub.server.draw(coords, width);
+                        }
+                    });
+                }).then(function() {
+
+                    tableroHub.server.getConnectedUsers(name);
+                    $('#user_name').text('Bienvenido, ' + name.substring(0, 1).toUpperCase() + name.substring(1));
+                }).fail(function(error) {
+
+                    console.log(error);
+                });
+            };
+
+            if (name == null || name == '') {
+                $('#modal_name').modal();
+            } else
+                connect();
+
+            $('#ok-name').click(function() {
+                name = $('#name-text').val();
+
+                if (name == '') {
+                    $('#modal_name').modal('show');
+                } else {
+                    $('#modal_name').modal('hide');
+                    $.cookie('name', name);
+
+                    connect();
+                }
+            });
 
             $('span[data-toggle="tooltip"]').tooltip();
 
-            var tablero = null;
-            var tableroHub = $.connection.tableroHub;
 
-            tableroHub.client.reset = function(received) {
-                tablero.reset();
+            tableroHub.client.reset = function(sender) {
+                tablero.reset(sender);
             };
 
-            tableroHub.client.draw = function(coords, lineWidth) {
-
-                tablero.draw(coords, lineWidth);
+            tableroHub.client.draw = function(coords, lineWidth, from) {
+                
+                tablero.draw(coords, lineWidth,from);
             };
 
             tableroHub.client.changeColor = function(color) {
                 tablero.changeColor(color);
             };
 
-            $.connection.hub.start().done(function() {
+            tableroHub.client.listConnectedUsers = function(users) {
+                var content = '';
+                $.each(users, function(index, value) {
+                    content += $('<a/>').text(value).addClass('list-group-item').append('<input type="checkbox" '+(tablero.isUserIgnored(value)==false?'checked="checked"':'')+'" class="block" />').wrapInner('<label>').wrapInner('<div class="checkbox"/>')[0].outerHTML;
 
-                tablero = $('#c').Tablero({
-                    remoteDraw: function(coords, width) {
-                        tableroHub.server.draw(coords, width);
-                    }
                 });
-            });
+                $('#status').html('<ul class="list-group">' + content + '</ul>');
+            };
 
             $('.reset').click(function() {
                 tableroHub.server.reset();
@@ -85,10 +145,10 @@
 
             });
 
-            $('.export').click(function () {
+            $('.export').click(function() {
                 tablero.exportImage();
             });
-            
+
             //prevent scrolling
             document.body.addEventListener('touchmove', function(event) {
                 event.preventDefault();
@@ -98,6 +158,15 @@
                 var color = $(this).find('span').css('color');
                 tablero.changeColor(color);
                 tableroHub.server.changeColor(color);
+            });
+
+            $(document).on('click','.block',function () {
+                var user = $(this).parent().text();
+                if (this.checked) {
+                    tablero.unblock(user);
+                } else {
+                    tablero.block(user);
+                }
             });
 
 

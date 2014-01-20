@@ -4,7 +4,7 @@
         
         var canvas = null;
         var context = null;
-
+        var ignore = [];
         var getCurrentContext = function () {
             var selector = $(this).attr('id');
             canvas = document.getElementById(selector);
@@ -17,10 +17,15 @@
         
         init.call(this, options);
 
-      
 
-        this.reset = function () {
-            window.location.reload();
+        this.isUserIgnored = function(user) {
+            
+            return !($.inArray(user, ignore) == -1);
+        };
+
+        this.reset = function (from) {
+            if (!this.isUserIgnored(from))
+              window.location.reload();
         };
 
         this.changeColor = function (color) {
@@ -31,14 +36,27 @@
             $(this).css('background-color', color);
         };
        
-        this.draw = function (coords, lineWidth) {
-            drawRemote(coords,lineWidth);
+        this.draw = function (coords, lineWidth, from) {
+            
+            if(!this.isUserIgnored(from))
+              drawRemote(coords,lineWidth);
         };
 
+        this.block = function (name) {
+            
+            if(!this.isUserIgnored(name))
+                ignore.push(name);
+           
+        };
+
+        this.unblock = function (name) {
+            ignore.splice($.inArray(name, ignore), 1);
+            
+        };
         this.eraser = function () {
 
             var con = getCurrentContext.call(this);
-            console.log(con.lineWidth);
+            
            if(con.lineWidth==1)
                con.lineWidth = 20;
             else
@@ -135,7 +153,7 @@
 
 
     var drawRemote = function (coordinates, lineWidth) {
-        console.log(lineWidth);
+        
         var currentWidth = context.lineWidth;
         context.lineWidth = lineWidth;
         context.beginPath();

@@ -13,6 +13,11 @@ namespace Tablero.Controllers
 
         public ActionResult Index()
         {
+            //if (Request.Cookies["Name"] == null)
+            //{
+                
+            //}
+
             return View();
         }
 

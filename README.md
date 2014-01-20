@@ -23,7 +23,7 @@ Why do this?
 As I said, this is just a fun project to familiarize myself with jQuery plugin development and the Canvas API but I also wanted to develop a tool that would allow me to teach math to my daughters when I am travelling so that I could put them excerises and see how they tackle each problem. 
 
 
-Future Plans: 
+Future Plans
 ==========
 
 The next step is to include some sort of audio/video streaming without requiring any third party tool such as Flash or Silverlight. I will soon start experimenting with streaming video between 2 participants via web sockets.

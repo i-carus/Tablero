@@ -4,6 +4,7 @@
         
         var canvas = null;
         var context = null;
+        var currentColor = null;
         //this is the list of users to ignore
         var ignore = [];
 
@@ -16,9 +17,18 @@
 
         $.extend(this, { coordinates: [] });
 
-        
-        init.call(this, options);
 
+        this.getCurrentColor = function () {
+            return currentColor;
+        };
+        
+
+        this.changeColor = function (color) {
+            currentColor = color;
+            getCurrentContext.call(this).strokeStyle = color;
+        };
+
+        init.call(this, options);
 
         this.isUserIgnored = function(user) {
             
@@ -32,10 +42,7 @@
             }
         };
 
-        this.changeColor = function (color) {
-            
-            getCurrentContext.call(this).strokeStyle = color;
-        };
+       
 
         this.changeBackgroundColor = function (color) {
             $(this).css('background-color', color);
@@ -97,25 +104,26 @@
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
         $.extend(this,coordinates);
-        if (context)
-            context.strokeStyle = "White";
+        if (context) {
+            this.changeColor('White');
+        }
         hookEvents.call(this, options);
     };
 
     var hookEvents = function (options) {
-
+        var color = this.getCurrentColor;
+        var context = canvas.getContext("2d");
         //we need to handle window resizes to accomodate for canvas width and height properly
         $(window).resize(function () {
             canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;            
+            canvas.height = canvas.offsetHeight;
+            context.strokeStyle = color();            
         });
 
         $(this).on('mousedown touchstart', this.coordinates,function (e) {
             var coords = getCoordinates(e);
             startPaint(coords.x, coords.y);
-            e.data.push(coords);
-            
-          
+            e.data.push(coords);         
         });
 
         $(this).on('mouseup touchend',this.coordinates,function (e) {

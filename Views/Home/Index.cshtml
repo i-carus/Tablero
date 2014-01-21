@@ -5,28 +5,40 @@
 
 <div style="position: relative; width: 100%; height: 100%;">
 
-    <canvas id="c" style="border: 1px #000 solid; cursor: pointer; background-color: black; width: 100%; height: 50%;"></canvas>
+    <canvas id="c" style="border: 1px #000 solid; cursor: pointer; background-color: black; width: 100%; height: 60%;"></canvas>
 
 </div>
 
 <div class="btn-toolbar" role="toolbar">
-   
-    <div class="btn-group btn-group-lg">
-         <input type="text" value="white" id="fore-color" class="pick-a-color">
+
+    <div class="btn-group btn-group-sm">
+        <input type="text" value="white" id="fore-color" class="pick-a-color">
     </div>
     <div class="btn-group btn-group-sm">
         <button type="button" class="btn btn-default reset"><span class="glyphicon glyphicon-trash " data-toggle="tooltip" data-placement="bottom" title="Reset - erases everything" style="color: black;"></span></button>
-        <button type="button" class="btn btn-default eraser"><span class="glyphicon glyphicon-minus-sign " data-toggle="tooltip" data-placement="bottom" title="Eraser - increases line width" style="color: black;"></span></button>
+        <button type="button" class="btn btn-default eraser"><span class="fa fa-eraser " data-toggle="tooltip" data-placement="bottom" title="Eraser - increases line width" style="color: black;"></span></button>
         <button type="button" class="btn btn-default export"><span class="glyphicon glyphicon-floppy-disk" data-toggle="tooltip" data-placement="bottom" title="Save drawing"></span></button>
-        <button type="button" class="btn btn-default">Background</button>
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-            <span class="caret"></span>
-            <span class="sr-only">Toggle Dropdown</span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-            <li><a href="#" class="switch-back">White</a></li>
-            <li><a href="#" class="switch-back">Black</a></li>
 
+        <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-default">Background</button>
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li><a href="#" class="switch-back">White</a></li>
+                <li><a href="#" class="switch-back">Black</a></li>
+
+            </ul>
+
+        </div>
+    </div>
+    <div class="btn-group btn-group-sm">
+        <button type="button" class="btn btn-primary dropdown-toggle" title="Untick to mute the user" data-toggle="dropdown">
+            Online Users <span class="badge" id="counter">0</span>
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" id="status">
         </ul>
     </div>
 </div>
@@ -51,11 +63,12 @@
     <!-- /.modal-dialog -->
 </div>
 <!-- /.modal -->
-<div class="list-group">
+@*<div class="list-group" style="max-height: 100px; overflow: auto;">
     <a href="#" class="list-group-item active">Users (uncheck to ignore updates from him/her)
     </a>
     <div id="status"></div>
-</div>
+</div>*@
+
 @section scripts
 {
     @Scripts.Render("~/bundles/Tablero")
@@ -78,7 +91,6 @@
                         }
                     });
                 }).then(function () {
-
                     tableroHub.server.getConnectedUsers(name);
                     $('#user_name').text('Welcome, ' + name.substring(0, 1).toUpperCase() + name.substring(1));
                 }).fail(function (error) {
@@ -105,17 +117,8 @@
                 }
             });
 
-            $(".pick-a-color").pickAColor({ showHexInput: false });
 
-            $('#fore-color').on('change', function () {
-                tablero.changeColor($(this).val());
-                tableroHub.server.changeColor($(this).val());
-            });
-
-
-            $('span[data-toggle="tooltip"]').tooltip();
-
-
+            //Hub client-side implementations of the server's functions
             tableroHub.client.reset = function (sender) {
                 tablero.reset(sender);
             };
@@ -131,12 +134,26 @@
 
             tableroHub.client.listConnectedUsers = function (users) {
                 var content = '';
+                var count = 0;
                 $.each(users, function (index, value) {
-                    content += $('<a/>').text(value).addClass('list-group-item').append('<input type="checkbox" ' + (tablero.isUserIgnored(value) == false ? 'checked="checked"' : '') + '" class="block" />').wrapInner('<label>').wrapInner('<div class="checkbox"/>')[0].outerHTML;
-
+                    content += $('<li/>').text(value).append('<input class="block" type="checkbox" ' + (tablero.isUserIgnored(value) == false ? 'checked="checked"' : '') + '"  />').wrapInner('<span class="checkbox"/>').wrapInner("<a/>")[0].outerHTML;
+                    count++;
                 });
-                $('#status').html('<ul class="list-group">' + content + '</ul>');
+                $('#counter').text(count);
+                $('#status').html(content);
             };
+
+
+            ///event handlers for the various controls in the page
+
+            $(".pick-a-color").pickAColor({ showHexInput: false });
+
+            $('#fore-color').on('change', function () {
+                tablero.changeColor('#' + $(this).val());
+                tableroHub.server.changeColor('#' + $(this).val());
+            });
+
+            $('span[data-toggle="tooltip"]').tooltip();
 
             $('.reset').click(function () {
                 tableroHub.server.reset();
@@ -157,11 +174,6 @@
                 tablero.exportImage();
             });
 
-            //prevent scrolling
-            document.body.addEventListener('touchmove', function (event) {
-                event.preventDefault();
-            }, false);
-
             $(document).on('click', '.block', function () {
                 var user = $(this).parent().text();
                 if (this.checked) {
@@ -170,6 +182,11 @@
                     tablero.block(user);
                 }
             });
+
+            //prevent scrolling
+            document.body.addEventListener('touchmove', function (event) {
+                event.preventDefault();
+            }, false);
         });
     </script>
 }

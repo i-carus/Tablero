@@ -4,8 +4,9 @@
         
         var canvas = null;
         var context = null;
-        
+        //this is the list of users to ignore
         var ignore = [];
+
         var getCurrentContext = function () {
             var selector = $(this).attr('id');
             canvas = document.getElementById(selector);
@@ -32,6 +33,7 @@
         };
 
         this.changeColor = function (color) {
+            
             getCurrentContext.call(this).strokeStyle = color;
         };
 
@@ -119,7 +121,7 @@
         $(this).on('mouseup touchend',this.coordinates,function (e) {
             endPaint();
             
-            if (options.remoteDraw !== undefined) {
+            if (options!==undefined && options.remoteDraw !== undefined) {
                 options.remoteDraw.call(this,e.data, context.lineWidth);
             }
             e.data.length = 0;//reset the points

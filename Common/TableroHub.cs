@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -19,13 +20,28 @@ namespace Tablero.Common
             string name = Context.RequestCookies.ContainsKey("name")
                 ? Context.RequestCookies["name"].Value
                 : "NOT_FOUND";
-
-            groups.AddOrUpdate(name, this.Context.ConnectionId, (key, value) => { return Context.ConnectionId; });
+            if(name!="NOT_FOUND")
+               groups.AddOrUpdate(name, this.Context.ConnectionId, (key, value) => { return Context.ConnectionId; });
             return base.OnConnected();
         }
 
         public override Task OnDisconnected()
         {
+            var values = groups.Values.Where(x => x == this.Context.ConnectionId).ToList();
+            List<string> keys = new List<string>();
+            foreach (var item in groups)
+            {
+                if (item.Value == this.Context.ConnectionId)
+                {
+                    keys.Add(item.Key);
+                }
+            }
+            foreach (var key in keys)
+            {
+                string connID;
+                groups.TryRemove(key, out connID);
+            }
+
             BroadcastListOfUsers();
             return base.OnDisconnected();
         }
@@ -36,40 +52,16 @@ namespace Tablero.Common
             return base.OnReconnected();
         }
 
-        private void BroadcastListOfUsers()
-        {
-            string key = "";
-            foreach (var item in groups)
-            {
-                if (item.Value == this.Context.ConnectionId)
-                {
-                    key = item.Key;
-                    break;
-                }
-            }
-            string connID = null;
-            groups.TryRemove(key, out connID);
-            Clients.All.ListConnectedUsers(groups.Keys.ToList());
-        }
-
-      
-
-
         public void GetConnectedUsers(string name)
         {
             if (name != null)
             {
-                
                 this.Groups.Add( name,this.Context.ConnectionId);
                 groups.AddOrUpdate(name,this.Context.ConnectionId, (key, value) => { return Context.ConnectionId; });
             }
             Clients.All.ListConnectedUsers(groups.Keys.ToList());
         }
 
-        public void Hello(string something)
-        {
-            Clients.All.hello(something + " coming from the server!");
-        }
 
         public void Reset()
         {
@@ -84,11 +76,18 @@ namespace Tablero.Common
             Clients.Others.draw(coords, lineWidth, sender);
         }
 
-       
-
         public void ChangeColor(string color)
         {
             Clients.Others.changeColor(color);
+        }
+
+        /// <summary>
+        /// Utility methods
+        /// </summary>
+        private void BroadcastListOfUsers()
+        {
+           
+            Clients.All.ListConnectedUsers(groups.Keys.ToList());
         }
     }
 }

@@ -23,8 +23,6 @@ namespace Tablero.Common
             {
                 AddUserToList(null,Context.RequestCookies["name"]);
             }
-            
-           
             return base.OnConnected();
         }
 
@@ -72,11 +70,11 @@ namespace Tablero.Common
             Clients.Others.reset(sender);
         }
 
-        public void Draw(List<Point> coords, int lineWidth)
+        public void Draw(Shape s)
         {
             string sender = (from item in groups where item.Value == this.Context.ConnectionId select item.Key).FirstOrDefault();
 
-            Clients.Others.draw(coords, lineWidth, sender);
+            Clients.Others.draw(s,sender);
         }
 
         public void ChangeColor(string color)
@@ -84,9 +82,12 @@ namespace Tablero.Common
             Clients.Others.changeColor(color);
         }
 
+        
         /// <summary>
-        /// Utility methods
+        /// Utility methods       
         /// </summary>
+ 
+        
         private void BroadcastListOfUsers()
         {
             var users = (from c in groups
@@ -94,6 +95,14 @@ namespace Tablero.Common
             Clients.All.ListConnectedUsers(users);
         }
 
+
+        /// <summary>
+        /// Adds the user to the groups Dictionary. 
+        /// Some mobile browsers don't send Cookies in the request; therefore, this method takes the username passed in from the call to
+        /// getConnectedUsers method on the client side, to construct a Cookie and check if it already exists in the dictionary. 
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="cookie"></param>
         private void AddUserToList(string username, Cookie cookie)
         {
             if (username != null)

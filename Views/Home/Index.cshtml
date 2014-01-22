@@ -86,8 +86,8 @@
             var connect = function () {
                 $.connection.hub.start().done(function () {
                     tablero = $('#c').Tablero({
-                        remoteDraw: function (coords, width) {
-                            tableroHub.server.draw(coords, width);
+                        remoteDraw: function (shape) {
+                            tableroHub.server.draw(shape);
                         }
                     });
                 }).then(function () {
@@ -123,9 +123,8 @@
                 tablero.reset(sender);
             };
 
-            tableroHub.client.draw = function (coords, lineWidth, from) {
-
-                tablero.draw(coords, lineWidth, from);
+            tableroHub.client.draw = function (shape) {
+                tablero.draw(shape);
             };
 
             tableroHub.client.changeColor = function (color) {
@@ -151,7 +150,6 @@
 
             $('#fore-color').on('change', function () {
                 tablero.changeColor('#' + $(this).val());
-                tableroHub.server.changeColor('#' + $(this).val());
             });
 
             $('span[data-toggle="tooltip"]').tooltip();

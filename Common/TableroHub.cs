@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNet.SignalR;
@@ -17,13 +18,17 @@ namespace Tablero.Common
 
         public override Task OnConnected()
         {
-            string name = Context.RequestCookies.ContainsKey("name")
-                ? Context.RequestCookies["name"].Value
-                : "NOT_FOUND";
-            if(name!="NOT_FOUND")
-               groups.AddOrUpdate(name, this.Context.ConnectionId, (key, value) => { return Context.ConnectionId; });
+
+            if (Context.RequestCookies.ContainsKey("name"))
+            {
+                AddUserToList(null,Context.RequestCookies["name"]);
+            }
+            
+           
             return base.OnConnected();
         }
+
+      
 
         public override Task OnDisconnected()
         {
@@ -54,12 +59,10 @@ namespace Tablero.Common
 
         public void GetConnectedUsers(string name)
         {
-            if (name != null)
-            {
-                this.Groups.Add( name,this.Context.ConnectionId);
-                groups.AddOrUpdate(name,this.Context.ConnectionId, (key, value) => { return Context.ConnectionId; });
-            }
-            Clients.All.ListConnectedUsers(groups.Keys.ToList());
+            if(!Context.RequestCookies.ContainsKey("name"))
+                AddUserToList(name,null);//To account for mobile devices that don't send the cookies on the request
+            BroadcastListOfUsers();
+            
         }
 
 
@@ -86,8 +89,38 @@ namespace Tablero.Common
         /// </summary>
         private void BroadcastListOfUsers()
         {
-           
-            Clients.All.ListConnectedUsers(groups.Keys.ToList());
+            var users = (from c in groups
+                select new {user = c.Key, connection_id = c.Value}).ToList();
+            Clients.All.ListConnectedUsers(users);
+        }
+
+        private void AddUserToList(string username, Cookie cookie)
+        {
+            if (username != null)
+            {
+                cookie = new Cookie("name", username);
+            }
+
+            if (cookie != null)
+            {
+                var name = cookie.Value;
+                int count = 1;
+                while (groups.ContainsKey(name))
+                    name = name.Substring(0, name.LastIndexOf('_') > 0 ? name.LastIndexOf('_') : name.Length) +
+                           ("_" + count++);
+                if (groups.ContainsKey(cookie.Value)) //user already taken
+                {
+                    if (Context.RequestCookies.ContainsKey("name"))
+                        Context.RequestCookies.Remove("name");
+
+                    cookie = new Cookie("name", name);
+                    Context.RequestCookies.Add("name", cookie);
+                    groups.AddOrUpdate(name, this.Context.ConnectionId, (key, value) => { return Context.ConnectionId; });
+                }
+                else
+                    groups.AddOrUpdate(cookie.Value, this.Context.ConnectionId,
+                        (key, value) => { return Context.ConnectionId; });
+            }
         }
     }
 }

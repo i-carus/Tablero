@@ -133,10 +133,11 @@
             };
 
             tableroHub.client.listConnectedUsers = function (users) {
+                
                 var content = '';
                 var count = 0;
                 $.each(users, function (index, value) {
-                    content += $('<li/>').text(value).append('<input class="block" type="checkbox" ' + (tablero.isUserIgnored(value) == false ? 'checked="checked"' : '') + '"  />').wrapInner('<span class="checkbox"/>').wrapInner("<a/>")[0].outerHTML;
+                    content += $('<li/>').text(value.user + (value.connection_id == $.connection.hub.id ? ' (You)' : '')).append('<input class="block" type="checkbox" ' + (tablero.isUserIgnored(value.user) == false ? 'checked="checked" ' : '') + (value.connection_id == $.connection.hub.id ? ' disabled="disabled" ' : '') + ' "  />').wrapInner('<span class="checkbox" />').wrapInner("<a/>")[0].outerHTML;
                     count++;
                 });
                 $('#counter').text(count);
@@ -174,7 +175,7 @@
                 tablero.exportImage();
             });
 
-            $(document).on('click', '.block', function () {
+            $(document).on('click', 'input.block:enabled', function () {
                 var user = $(this).parent().text();
                 if (this.checked) {
                     tablero.unblock(user);

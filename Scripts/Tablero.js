@@ -28,8 +28,6 @@
             getCurrentContext.call(this).strokeStyle = color;
         };
 
-        init.call(this, options);
-
         this.isUserIgnored = function(user) {
             
             return !($.inArray(user, ignore) == -1);
@@ -42,16 +40,13 @@
             }
         };
 
-       
-
         this.changeBackgroundColor = function (color) {
             $(this).css('background-color', color);
         };
        
-        this.draw = function (coords, lineWidth, from) {
-            
+        this.draw = function (shape,from) {
             if(!this.isUserIgnored(from))
-              drawRemote(coords,lineWidth);
+              drawRemote(shape);
         };
 
         this.block = function (name) {
@@ -79,6 +74,8 @@
             var dataURL = canvas.toDataURL();
             window.open(dataURL);
         };
+
+        init.call(this, options);
 
         return this;
 
@@ -130,7 +127,7 @@
             endPaint();
             
             if (options!==undefined && options.remoteDraw !== undefined) {
-                options.remoteDraw.call(this,e.data, context.lineWidth);
+                options.remoteDraw.call(this, { Coordinates: e.data, LineWidth: context.lineWidth, Color: color() });
             }
             e.data.length = 0;//reset the points
         });
@@ -170,16 +167,19 @@
 
 
 
-    var drawRemote = function (coordinates, lineWidth) {
+    var drawRemote = function (shape) {
         
         var currentWidth = context.lineWidth;
-        context.lineWidth = lineWidth;
+        var currentColor = context.strokeStyle;
+        context.lineWidth = shape.LineWidth;
+        context.strokeStyle = shape.Color;
         context.beginPath();
-        for (var i = 0; i < coordinates.length; i++) {
-            context.lineTo(Math.floor(coordinates[i].X) + 0.5, Math.floor(coordinates[i].Y) + 0.5);
+        for (var i = 0; i < shape.Coordinates.length; i++) {
+            context.lineTo(Math.floor(shape.Coordinates[i].X) + 0.5, Math.floor(shape.Coordinates[i].Y) + 0.5);
         }
         context.stroke();
         context.lineWidth = currentWidth;
+        context.strokeStyle = currentColor;
     };
 
 

@@ -20,7 +20,7 @@ The app also supports "ignoring" updates from certain users so that in the event
 Why do this?
 =========
 
-As I said, this is just a fun project to familiarize myself with jQuery plugin development and the Canvas API but I also wanted to develop a tool that would allow me to teach math to my daughters when I am travelling so that I could put them excerises and see how they tackle each problem. 
+I just a fun project to familiarize myself with jQuery plugin development and the Canvas API in particular but I also wanted to develop a tool that would allow me to teach basic math to my daughters when I am travelling so that I could put them excerises and see how they tackle each problem. 
 
 
 Future Plans

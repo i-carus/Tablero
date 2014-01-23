@@ -82,6 +82,10 @@ namespace Tablero.Common
             Clients.Others.changeColor(color);
         }
 
+        //public void StreamImage(string base64Image)
+        //{
+        //    Clients.Others.streamImage(base64Image);
+        //}
         
         /// <summary>
         /// Utility methods       

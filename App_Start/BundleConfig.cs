@@ -9,10 +9,10 @@ namespace Tablero
         public static void RegisterBundles(BundleCollection bundles)
         {
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
-                        "~/Scripts/jquery-{version}.js", "~/Scripts/jquery.cookie.js", "~/Scripts/tinycolor-0.9.15.min.js", "~/Scripts/pick-a-color-1.1.8.min.js"));
+                        "~/Scripts/jquery-{version}.js", "~/Scripts/jquery.cookie.js", "~/Scripts/bootstrap-colorpalette.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
-                "~/Scripts/jquery-ui-{version}.js"));//, "~/Scripts/jquery.mobile-1.3.2.js"));
+                "~/Scripts/jquery-ui-{version}.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(
                         "~/Scripts/jquery.unobtrusive*",
@@ -33,7 +33,7 @@ namespace Tablero
             //bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
             //            "~/Scripts/modernizr-*"));
 
-            bundles.Add(new StyleBundle("~/Content/bootstrap").Include("~/Content/bootstrap.css", "~/Content/font-awesome.css", "~/Content/pick-a-color-1.1.8.min.css"));
+            bundles.Add(new StyleBundle("~/Content/bootstrap").Include("~/Content/bootstrap.css", "~/Content/font-awesome.css", "~/Content/bootstrap-colorpalette.css"));
 
             bundles.Add(new StyleBundle("~/Content/themes/base/css").Include(
                         "~/Content/themes/base/jquery.ui.core.css",

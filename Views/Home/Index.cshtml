@@ -63,7 +63,7 @@
 <!-- /.modal -->
 
 <video id="localVideo" controls autoplay></video>
-
+<video id="remoteVideo" autoplay></video>
 @section scripts
 {
 
@@ -199,6 +199,14 @@
                 });
                 
             };
+
+            tableroHub.client.acceptAnswer = function (message) {
+                console.log('accept answer');
+                pc.setRemoteDescription(new RTCSessionDescription(message.sdp), function () {
+
+                });
+            };
+
             ///event handlers for the various controls in the page
 
          
@@ -262,6 +270,15 @@
             pc.onicecandidate = function (evt) {
                 tableroHub.server.sendCandidate(JSON.stringify({ 'candidate': evt.candidate }), videoRecipient);
             };
+
+
+
+            pc.onaddstream = function (evt) {
+                var remoteVideo = document.getElementById('remoteVideo');
+                attachMediaStream(remoteVideo, evt.stream);
+            };
+
+
 
             function videoErrorCallback(error) {
                 console.log('Error initiating video conference', error);

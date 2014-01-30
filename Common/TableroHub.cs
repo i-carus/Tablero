@@ -63,6 +63,31 @@ namespace Tablero.Common
             
         }
 
+        public void SendOffer(string message, string otherPeer)
+        {
+            string recipient= null;
+
+            if (groups.TryGetValue(otherPeer, out  recipient))
+                Clients.Client(recipient).acceptOffer(message, otherPeer);
+            
+        }
+
+        public void SendCandidate(string message, string otherPeer)
+        {
+            string recipient = null;
+
+            if (groups.TryGetValue(otherPeer, out  recipient))
+                Clients.Client(recipient).receiveCandidate(message);
+        }
+
+        public void SendAnswer(string message, string otherPeer)
+        {
+            string recipient = null;
+
+            if (groups.TryGetValue(otherPeer, out  recipient))
+                Clients.Client(recipient).acceptAnswer(message);
+        }
+
 
         public void Reset()
         {

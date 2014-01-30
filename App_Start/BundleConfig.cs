@@ -23,7 +23,7 @@ namespace Tablero
                         "~/Scripts/bootstrap.js*"));
 
             bundles.Add(new ScriptBundle("~/bundles/tablero").Include(
-                       "~/Scripts/Tablero.js*"));
+                       "~/Scripts/Tablero.js","~/Scripts/adapter.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/signalr").Include(
                        "~/Scripts/jquery.signalR-{version}.js"));

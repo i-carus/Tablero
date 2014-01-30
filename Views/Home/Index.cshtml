@@ -16,7 +16,7 @@
         <button type="button" class="btn btn-default reset"><span class="glyphicon glyphicon-trash " data-toggle="tooltip" data-placement="bottom" title="Reset - erases everything" style="color: black;"></span></button>
         <button type="button" class="btn btn-default eraser"><span class="fa fa-eraser " data-toggle="tooltip" data-placement="bottom" title="Eraser - increases line width" style="color: black;"></span></button>
         <button type="button" class="btn btn-default export"><span class="glyphicon glyphicon-floppy-disk" data-toggle="tooltip" data-placement="bottom" title="Save drawing"></span></button>
-
+        <button type="button" id="startVideo" class="btn btn-primary">Start Video</button>
         <div class="btn-group btn-group-sm">
             <button type="button" class="btn btn-default">Background</button>
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -62,6 +62,8 @@
 </div>
 <!-- /.modal -->
 
+<video id="localVideo" controls autoplay></video>
+
 @section scripts
 {
 
@@ -75,11 +77,26 @@
 
     <script>
 
+        
+
         $(function() {
             var tablero = null;
             var tableroHub = $.connection.tableroHub;
             var name = $.cookie('name');
-            
+            var videoRecipient = '';
+            var pc = new RTCPeerConnection(null);
+            var iceCandidates = [];
+
+            var video_constraints= {
+                audio: false,
+                video: {
+                    mandatory: {
+                        maxWidth: 320,
+                        maxHeight: 240
+                    },
+                    optional: []
+                }
+            };
             var connect = function() {
                 $.connection.hub.start().done(function() {
                     tablero = $('#c').Tablero({
@@ -145,8 +162,43 @@
             };
 
 
-           
 
+            tableroHub.client.receiveCandidate = function (message) {
+
+                //console.log('receiveCandidates', message);
+                iceCandidates.push(message.candidate);
+                //console.log(iceCandidates.length);
+                //pc.addIceCandidate(new RTCIceCandidate(message.candidate));
+                
+            };
+
+
+            tableroHub.client.acceptOffer = function (message, otherPeer) {               
+                var result = $.parseJSON(message);
+                pc.setRemoteDescription(new RTCSessionDescription(result.sdp), function () {
+                    $.each(iceCandidates, function (index, value) {
+                        if (value != undefined) {
+                            console.log(value);
+                            pc.addIceCandidate(new RTCIceCandidate(value));
+                        }
+                    });
+
+
+                    getUserMedia(video_constraints, function (stream) {
+                        pc.addStream(stream);
+
+                        pc.createAnswer(function (desc) {
+                            pc.setLocalDescription(desc, function () {
+                                tableroHub.server.sendAnswer(pc.localDescription,otherPeer);
+                            });
+                        });
+
+                    }, function (error) {
+                        console.log('unable to get video going', error);
+                    });
+                });
+                
+            };
             ///event handlers for the various controls in the page
 
          
@@ -185,6 +237,11 @@
                 tablero.exportImage();
             });
 
+            $('#startVideo').click(function () {
+                
+                getUserMedia(video_constraints, videoSuccess, videoErrorCallback);
+            });
+
             $(document).on('click', 'input.block:enabled', function() {
                 var user = $(this).parent().text();
                 if (this.checked) {
@@ -195,11 +252,48 @@
             });
 
             //prevent scrolling
-            document.body.addEventListener('touchmove', function(event) {
-                event.preventDefault();
-            }, false);
+            //document.body.addEventListener('touchmove', function(event) {
+            //    event.preventDefault();
+            //}, false);
 
            
+          
+
+            pc.onicecandidate = function (evt) {
+                tableroHub.server.sendCandidate(JSON.stringify({ 'candidate': evt.candidate }), videoRecipient);
+            };
+
+            function videoErrorCallback(error) {
+                console.log('Error initiating video conference', error);
+            };
+
+            function videoSuccess(localStream) {
+
+               
+                try {
+                    videoRecipient= $('#status>li>a').children(":not(:contains('(You)'))").first().text();
+
+                    window.stream = localStream;
+                    var video = document.getElementById('localVideo');
+                    video.src = window.URL.createObjectURL(localStream);
+                    video.play();
+
+                    pc.addStream(localStream);
+
+                    pc.createOffer(function (desc) {
+                        pc.setLocalDescription(desc, function () {
+                            tableroHub.server.sendOffer(JSON.stringify({ 'sdp': desc }), videoRecipient);
+                        });
+                    });
+
+                } catch (e) {
+                    alert("there's no one to talk to :_(");
+                }
+
+
+
+            };
+
         });
 
     </script>

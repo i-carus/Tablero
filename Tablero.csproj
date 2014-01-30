@@ -258,6 +258,7 @@
     <Content Include="fonts\fontawesome-webfont.eot" />
     <Content Include="fonts\FontAwesome.otf" />
     <None Include="Properties\PublishProfiles\marianasanchez.com.pubxml" />
+    <Content Include="Scripts\adapter.js" />
     <Content Include="Scripts\bootstrap-colorpalette.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

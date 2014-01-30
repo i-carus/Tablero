@@ -3,16 +3,9 @@
 }
 
 
-<div style="position: relative; width: 100%; height: 100%;">
+<canvas id="c" style="border: 1px #000 solid; cursor: pointer; background-color: black; "></canvas>
 
-    <canvas id="c" style="border: 1px #000 solid; cursor: pointer; background-color: black; width: 100%; height: 60%;"></canvas>
 
-</div>
-
-@*<img src="" id="remoteImage" class="img-rounded">
-
-<button class="btn btn-default" id="startVideo">Start Video</button>
-<button class="btn btn-default" id="startStream">Start Streamming!</button>*@
 <div class="btn-toolbar" role="toolbar">
 
     <div class="btn-group btn-group-sm">
@@ -69,9 +62,6 @@
 </div>
 <!-- /.modal -->
 
-
-<video autoplay></video>
-<canvas id="videocanvas" style="display: none;width:320px; height: 240px;"></canvas>
 @section scripts
 {
 
@@ -89,7 +79,7 @@
             var tablero = null;
             var tableroHub = $.connection.tableroHub;
             var name = $.cookie('name');
-            var remoteImage = $('#remoteImage');
+            
             var connect = function() {
                 $.connection.hub.start().done(function() {
                     tablero = $('#c').Tablero({
@@ -105,6 +95,10 @@
                     console.log(error);
                 });
             };
+
+
+            $('#c').width($('.container').width());
+            $('#c').height($(document).height()-250);
 
             if (name == null || name == '') {
                 $('#modal_name').modal();
@@ -151,23 +145,13 @@
             };
 
 
-            //tableroHub.client.streamImage = function (image) {
-
-            //    remoteImage.attr("src", image);
-            //};
-
+           
 
             ///event handlers for the various controls in the page
 
-            $('#startVideo').click(function() {
-                captureVideo();
-            });
+         
 
-            $('#startStream').click(function() {
-                startStream();
-            });
-
-            $('#pick-color').css({ color: '#fff' });
+            $('#pick-color').css({ color: 'yellow' });
 
             $('.colorpalette').colorPalette().on('selectColor', function(e) {
                 $(this).toggle();
@@ -215,67 +199,7 @@
                 event.preventDefault();
             }, false);
 
-            //var vgaConstraints = {
-            //    video: {
-            //        mandatory: {
-            //            maxWidth: 320,
-            //            maxHeight: 240
-            //        }
-            //    },
-            //    audio: true
-            //};
-
-            //var localMediaStream = null;
-            //var canvass = document.querySelector('canvas#videocanvas');
-            //var ctx = canvass.getContext('2d');
-            //var video = document.querySelector('video');
-            //video.width = 320;
-            //video.height = 240;
-            //canvass.width = video.width;
-            //canvass.height = video.height;
-
-            //function captureVideo() {
-            //    navigator.getUserMedia = navigator.getUserMedia ||
-            //        navigator.webkitGetUserMedia ||
-            //        navigator.mozGetUserMedia ||
-            //        navigator.msGetUserMedia;
-
-
-            //    if (navigator.getUserMedia) {
-            //        navigator.getUserMedia(vgaConstraints, function (stream) {
-            //            video.src = window.URL.createObjectURL(stream);
-            //            localMediaStream = stream;
-            //        }, function (e) {
-            //            console.log('Unable to get webcam', e);
-            //        });
-            //    } else {
-            //        console.log('Unable to get webcam');
-            //    }
-            //}
-
-
-            //var streamID = null;
-
-            //function startStream() {
-            //    streamID = setInterval(function () {
-            //        streamVideo();
-            //    }, 1000/15);
-            //}
-
-            //function stopStream() {
-            //    clearInterval(streamID);
-            //}
-
-            //function streamVideo() {
-            //    if (localMediaStream) {
-
-
-            //        ctx.drawImage(video, 0, 0, 256, 256);
-            //        var result = canvass.toDataURL("image/webp");
-
-            //        tableroHub.server.streamImage(result);
-            //    }
-            //}
+           
         });
 
     </script>

@@ -102,7 +102,7 @@
         canvas.height = canvas.offsetHeight;
         $.extend(this,coordinates);
         if (context) {
-            this.changeColor('White');
+            this.changeColor('yellow');
         }
         hookEvents.call(this, options);
     };

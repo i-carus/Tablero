@@ -145,21 +145,11 @@
             };
 
 
-            //tableroHub.client.streamImage = function (image) {
-
-            //    remoteImage.attr("src", image);
-            //};
-
+           
 
             ///event handlers for the various controls in the page
 
-            $('#startVideo').click(function() {
-                captureVideo();
-            });
-
-            $('#startStream').click(function() {
-                startStream();
-            });
+         
 
             $('#pick-color').css({ color: 'yellow' });
 
@@ -209,67 +199,7 @@
                 event.preventDefault();
             }, false);
 
-            //var vgaConstraints = {
-            //    video: {
-            //        mandatory: {
-            //            maxWidth: 320,
-            //            maxHeight: 240
-            //        }
-            //    },
-            //    audio: true
-            //};
-
-            //var localMediaStream = null;
-            //var canvass = document.querySelector('canvas#videocanvas');
-            //var ctx = canvass.getContext('2d');
-            //var video = document.querySelector('video');
-            //video.width = 320;
-            //video.height = 240;
-            //canvass.width = video.width;
-            //canvass.height = video.height;
-
-            //function captureVideo() {
-            //    navigator.getUserMedia = navigator.getUserMedia ||
-            //        navigator.webkitGetUserMedia ||
-            //        navigator.mozGetUserMedia ||
-            //        navigator.msGetUserMedia;
-
-
-            //    if (navigator.getUserMedia) {
-            //        navigator.getUserMedia(vgaConstraints, function (stream) {
-            //            video.src = window.URL.createObjectURL(stream);
-            //            localMediaStream = stream;
-            //        }, function (e) {
-            //            console.log('Unable to get webcam', e);
-            //        });
-            //    } else {
-            //        console.log('Unable to get webcam');
-            //    }
-            //}
-
-
-            //var streamID = null;
-
-            //function startStream() {
-            //    streamID = setInterval(function () {
-            //        streamVideo();
-            //    }, 1000/15);
-            //}
-
-            //function stopStream() {
-            //    clearInterval(streamID);
-            //}
-
-            //function streamVideo() {
-            //    if (localMediaStream) {
-
-
-            //        ctx.drawImage(video, 0, 0, 256, 256);
-            //        var result = canvass.toDataURL("image/webp");
-
-            //        tableroHub.server.streamImage(result);
-            //    }
-            //}
+           
         });
 
     </script>

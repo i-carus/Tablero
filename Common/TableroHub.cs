@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNet.SignalR;
+using Microsoft.Owin.Security.Provider;
 using Microsoft.SqlServer.Server;
 
 namespace Tablero.Common
@@ -66,9 +67,10 @@ namespace Tablero.Common
         public void SendOffer(string message, string otherPeer)
         {
             string recipient= null;
-
-            if (groups.TryGetValue(otherPeer, out  recipient))
-                Clients.Client(recipient).acceptOffer(message, otherPeer);
+            string sender = (from item in groups where item.Value == this.Context.ConnectionId select item.Key).FirstOrDefault();
+            
+            if (groups.TryGetValue(otherPeer, out  recipient) )
+                Clients.Client(recipient).acceptOffer(message, sender);
             
         }
 

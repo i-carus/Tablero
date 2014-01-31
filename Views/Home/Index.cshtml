@@ -63,7 +63,7 @@
 <!-- /.modal -->
 
 <video id="localVideo" controls autoplay></video>
-<video id="remoteVideo" autoplay></video>
+<video id="remoteVideo" controls autoplay></video>
 @section scripts
 {
 
@@ -77,17 +77,19 @@
 
     <script>
 
-        
-
         $(function() {
             var tablero = null;
             var tableroHub = $.connection.tableroHub;
             var name = $.cookie('name');
             var videoRecipient = '';
-            var pc = new RTCPeerConnection(null);
+            var pc_config = { "iceServers": [{ "url": "stun:stun.l.google.com:19302" }] };
+
+            // Create an RTCPeerConnection via the polyfill (adapter.js).
+            var pc = new RTCPeerConnection(pc_config);
+            //var pc = new RTCPeerConnection(null);
             var iceCandidates = [];
 
-            var video_constraints= {
+            var video_constraints = {
                 audio: false,
                 video: {
                     mandatory: {
@@ -115,7 +117,7 @@
 
 
             $('#c').width($('.container').width());
-            $('#c').height($(document).height()-250);
+            $('#c').height($(document).height() - 250);
 
             if (name == null || name == '') {
                 $('#modal_name').modal();
@@ -162,54 +164,97 @@
             };
 
 
+            tableroHub.client.receiveCandidate = function(message) {
+                var m = $.parseJSON(message);
 
-            tableroHub.client.receiveCandidate = function (message) {
-
-                //console.log('receiveCandidates', message);
-                iceCandidates.push(message.candidate);
-                //console.log(iceCandidates.length);
+                if (m.candidate) {
+                    iceCandidates.push(m.candidate);
+                    console.log(m.candidate);
+                }
                 //pc.addIceCandidate(new RTCIceCandidate(message.candidate));
-                
             };
 
 
-            tableroHub.client.acceptOffer = function (message, otherPeer) {               
+            tableroHub.client.acceptOffer = function(message, otherPeer) {
                 var result = $.parseJSON(message);
-                pc.setRemoteDescription(new RTCSessionDescription(result.sdp), function () {
-                    $.each(iceCandidates, function (index, value) {
-                        if (value != undefined) {
-                            console.log(value);
-                            pc.addIceCandidate(new RTCIceCandidate(value));
-                        }
-                    });
 
+                getUserMedia({ video: true, audio: true }, function(localStream) {
 
-                    getUserMedia(video_constraints, function (stream) {
-                        pc.addStream(stream);
+                    var localVideo = document.getElementById('localVideo');
+                    attachMediaStream(localVideo, localStream);
+                    pc.addStream(localStream);
 
-                        pc.createAnswer(function (desc) {
-                            pc.setLocalDescription(desc, function () {
-                                tableroHub.server.sendAnswer(pc.localDescription,otherPeer);
+                    pc.setRemoteDescription(new RTCSessionDescription(result.sdp), function() {
+                       
+
+                        pc.createAnswer(function(answer) {
+                            pc.setLocalDescription(answer, function () {
+                                $.each(iceCandidates, function (index, value) {
+                                    if (value != undefined && value != null) {
+                                        pc.addIceCandidate(new RTCIceCandidate(value));
+                                    }
+                                });
+
+                                tableroHub.server.sendAnswer(JSON.stringify({ 'sdp': answer }), otherPeer);
+                                
                             });
                         });
 
-                    }, function (error) {
-                        console.log('unable to get video going', error);
                     });
+
+
+                }, function(error) {
+                    console.log('unable to get video going', error);
                 });
-                
+
+
             };
 
-            tableroHub.client.acceptAnswer = function (message) {
-                console.log('accept answer');
-                pc.setRemoteDescription(new RTCSessionDescription(message.sdp), function () {
+            function videoSuccess(localStream) {
+                try {
+                    videoRecipient = $('#status > li > a').children(":not(:contains('(You)'))").first().text();
+                    var video = document.getElementById('localVideo');
+                    pc.addStream(localStream);
+                    attachMediaStream(video, localStream);
+                  
 
+                    pc.createOffer(function (desc) {
+                        
+                        pc.setLocalDescription(desc, function() {
+                            tableroHub.server.sendOffer(JSON.stringify({ 'sdp': desc }), videoRecipient);
+                        });
+                    });
+
+                } catch(e) {
+                    console.log(e);
+                    alert("there's no one to talk to :_(");
+                }
+
+
+            }
+
+            ;
+
+            tableroHub.client.acceptAnswer = function(message) {
+                console.log('answer received');
+                var descrip = new RTCSessionDescription($.parseJSON(message).sdp);
+                //console.log(pc);
+                pc.setRemoteDescription(descrip, function() {
+                    $.each(iceCandidates, function (index, value) {
+                        if (value != undefined && value != null) {
+                            pc.addIceCandidate((value));
+                            
+                        }
+                    });
+
+                    console.log('tudo ben');
+                }, function(error) {
+                    console.log(error);
                 });
             };
 
             ///event handlers for the various controls in the page
 
-         
 
             $('#pick-color').css({ color: 'yellow' });
 
@@ -245,9 +290,9 @@
                 tablero.exportImage();
             });
 
-            $('#startVideo').click(function () {
-                
-                getUserMedia(video_constraints, videoSuccess, videoErrorCallback);
+            $('#startVideo').click(function() {
+
+                getUserMedia({ video: true, audio: true }, videoSuccess, videoErrorCallback);
             });
 
             $(document).on('click', 'input.block:enabled', function() {
@@ -263,53 +308,34 @@
             //document.body.addEventListener('touchmove', function(event) {
             //    event.preventDefault();
             //}, false);
-
            
           
 
-            pc.onicecandidate = function (evt) {
-                tableroHub.server.sendCandidate(JSON.stringify({ 'candidate': evt.candidate }), videoRecipient);
+            pc.onicecandidate = function(evt) {
+                if (evt.candidate) {
+
+                    iceCandidates.push(evt.candidate);
+                    // pc.addIceCandidate(evt.candidate);
+                    console.log('ice cand');
+                    tableroHub.server.sendCandidate(JSON.stringify({ 'candidate': evt.candidate }), videoRecipient);
+                }
             };
 
 
-
-            pc.onaddstream = function (evt) {
+            pc.onaddstream = function(evt) {
+                console.log('add stream fired');
+               
                 var remoteVideo = document.getElementById('remoteVideo');
                 attachMediaStream(remoteVideo, evt.stream);
             };
 
 
-
             function videoErrorCallback(error) {
                 console.log('Error initiating video conference', error);
-            };
+            }
 
-            function videoSuccess(localStream) {
+            ;
 
-               
-                try {
-                    videoRecipient= $('#status>li>a').children(":not(:contains('(You)'))").first().text();
-
-                    window.stream = localStream;
-                    var video = document.getElementById('localVideo');
-                    video.src = window.URL.createObjectURL(localStream);
-                    video.play();
-
-                    pc.addStream(localStream);
-
-                    pc.createOffer(function (desc) {
-                        pc.setLocalDescription(desc, function () {
-                            tableroHub.server.sendOffer(JSON.stringify({ 'sdp': desc }), videoRecipient);
-                        });
-                    });
-
-                } catch (e) {
-                    alert("there's no one to talk to :_(");
-                }
-
-
-
-            };
 
         });
 

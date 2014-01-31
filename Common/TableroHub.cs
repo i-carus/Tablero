@@ -17,17 +17,16 @@ namespace Tablero.Common
 
         private static ConcurrentDictionary<string,string> groups = new  ConcurrentDictionary<string, string>();
 
+        #region connection_events
         public override Task OnConnected()
         {
 
             if (Context.RequestCookies.ContainsKey("name"))
             {
-                AddUserToList(null,Context.RequestCookies["name"]);
+                AddUserToList(null, Context.RequestCookies["name"]);
             }
             return base.OnConnected();
         }
-
-      
 
         public override Task OnDisconnected()
         {
@@ -55,25 +54,36 @@ namespace Tablero.Common
             BroadcastListOfUsers();
             return base.OnReconnected();
         }
+        #endregion
+      
+        #region WebRTC_stuff
 
-        public void GetConnectedUsers(string name)
-        {
-            if(!Context.RequestCookies.ContainsKey("name"))
-                AddUserToList(name,null);//To account for mobile devices that don't send the cookies on the request
-            BroadcastListOfUsers();
-            
-        }
-
+        /// <summary>
+        /// When an RTCPeerConnection is created, the caller calls this method to send the initial offer to the
+        /// other party
+        /// </summary>
+        /// <param name="message">The SDP message in JSON format</param>
+        /// <param name="otherPeer">Name of the person (not the connection id) that will receive the offer to establish the connection</param>
         public void SendOffer(string message, string otherPeer)
         {
-            string recipient= null;
-            string sender = (from item in groups where item.Value == this.Context.ConnectionId select item.Key).FirstOrDefault();
-            
-            if (groups.TryGetValue(otherPeer, out  recipient) )
+            string recipient = null;
+            string sender = GetSenderNameFromConnectionId();
+
+            if (groups.TryGetValue(otherPeer, out  recipient))
                 Clients.Client(recipient).acceptOffer(message, sender);
-            
+
         }
 
+        /// <summary>
+        /// After an RTCPeerConnection is created, a list of IceCandidate(s) are created. 
+        /// The peer that initiates the connection, will fire a series of RTCPeerConnection.onicecandidate events. 
+        /// These candidates generated on this event need to be send over to the other peer (the person receiving the call).
+        /// BUT CAREFUL: the IceCandidate(s) should NOT be assigned until the RTCPeerConnection.setRemoteDescription method
+        /// has been called on each peer but since the candidates are generated way before you get a chance to set the remote description
+        /// one needs to put these candidates in a JavaScript array until after setRemoteDescription is called.
+        /// </summary>
+        /// <param name="message">The IceCandidate in JSON format</param>
+        /// <param name="otherPeer">The name (not the connection id) of the peer receiving the candidate.</param>
         public void SendCandidate(string message, string otherPeer)
         {
             string recipient = null;
@@ -82,6 +92,13 @@ namespace Tablero.Common
                 Clients.Client(recipient).receiveCandidate(message);
         }
 
+        /// <summary>
+        /// Once the callee receives the offer and sets it's RemoteDescription, it needs to send an "Answer" (an object identical to the Offer, really)
+        /// except that it's "type" property is "answer" instead of "offer". The Caller takes the answer and sets it as its own RemoteDescription.
+        /// In order to pass this answer (Offer) back to the caller, we call the acceptAnswer method on the client side.
+        /// </summary>
+        /// <param name="message">The SDP (Session Description Protocol) (answer) in JSON format</param>
+        /// <param name="otherPeer"></param>
         public void SendAnswer(string message, string otherPeer)
         {
             string recipient = null;
@@ -89,43 +106,74 @@ namespace Tablero.Common
             if (groups.TryGetValue(otherPeer, out  recipient))
                 Clients.Client(recipient).acceptAnswer(message);
         }
+        #endregion
 
-
+        #region Tablero-related methods
+        
+        /// <summary>
+        /// Sends a message to clear the blackboard
+        /// </summary>
         public void Reset()
         {
-            string sender = (from item in groups where item.Value == this.Context.ConnectionId select item.Key).FirstOrDefault();
+            string sender = GetSenderNameFromConnectionId();
             Clients.Others.reset(sender);
         }
 
+        /// <summary>
+        /// Sends a Shape object to the clients to instruct their blackboards to draw the Shape sent.
+        /// </summary>
+        /// <param name="s"></param>
         public void Draw(Shape s)
         {
-            string sender = (from item in groups where item.Value == this.Context.ConnectionId select item.Key).FirstOrDefault();
+            string sender = GetSenderNameFromConnectionId();
 
-            Clients.Others.draw(s,sender);
+            Clients.Others.draw(s, sender);
         }
 
+        /// <summary>
+        /// Method to change the line color on all the blackboards.
+        /// </summary>
+        /// <param name="color"></param>
         public void ChangeColor(string color)
         {
             Clients.Others.changeColor(color);
         }
+        #endregion
 
-        //public void StreamImage(string base64Image)
-        //{
-        //    Clients.Others.streamImage(base64Image);
-        //}
+        #region utility methods
+
+        /// <summary>
+        /// This method is called as soon as a user establishes a connection.
+        /// We don't do it from the OnConnectedEvent simply because we need to establish the user's name,
+        /// which is obtained AFTER the connection is established
+        /// </summary>
+        /// <param name="name"></param>
+        public void GetConnectedUsers(string name)
+        {
+            if (!Context.RequestCookies.ContainsKey("name"))
+                AddUserToList(name, null);//To account for mobile devices that don't send the cookies on the request
+            BroadcastListOfUsers();
+        }
+        
         
         /// <summary>
-        /// Utility methods       
+        /// Broadcasts the list of all connected users
         /// </summary>
- 
-        
         private void BroadcastListOfUsers()
         {
             var users = (from c in groups
-                select new {user = c.Key, connection_id = c.Value}).ToList();
+                         select new { user = c.Key, connection_id = c.Value }).ToList();
             Clients.All.ListConnectedUsers(users);
         }
 
+        /// <summary>
+        /// Returns the name associated to this user, using it's ConnectionID
+        /// </summary>
+        /// <returns></returns>
+        private string GetSenderNameFromConnectionId()
+        {
+            return (from item in groups where item.Value == this.Context.ConnectionId select item.Key).FirstOrDefault();
+        }
 
         /// <summary>
         /// Adds the user to the groups Dictionary. 
@@ -162,5 +210,8 @@ namespace Tablero.Common
                         (key, value) => { return Context.ConnectionId; });
             }
         }
+
+        #endregion
+        
     }
 }

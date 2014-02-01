@@ -279,6 +279,7 @@
     <Content Include="Scripts\jquery.validate.min.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\main.js" />
     <Content Include="Scripts\modernizr-2.7.1.js" />
     <Content Include="Scripts\Tablero.js" />
     <Content Include="Scripts\_references.js" />

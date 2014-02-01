@@ -69,7 +69,7 @@ namespace Tablero.Common
             string recipient = null;
             string sender = GetSenderNameFromConnectionId();
 
-            if (groups.TryGetValue(otherPeer, out  recipient))
+            if (groups.TryGetValue(otherPeer.Trim(), out  recipient))
                 Clients.Client(recipient).acceptOffer(message, sender);
 
         }
@@ -88,7 +88,7 @@ namespace Tablero.Common
         {
             string recipient = null;
 
-            if (groups.TryGetValue(otherPeer, out  recipient))
+            if (groups.TryGetValue(otherPeer.Trim(), out  recipient))
                 Clients.Client(recipient).receiveCandidate(message);
         }
 
@@ -103,7 +103,7 @@ namespace Tablero.Common
         {
             string recipient = null;
 
-            if (groups.TryGetValue(otherPeer, out  recipient))
+            if (groups.TryGetValue(otherPeer.Trim(), out  recipient))
                 Clients.Client(recipient).acceptAnswer(message);
         }
         #endregion

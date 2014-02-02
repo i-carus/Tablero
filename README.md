@@ -8,7 +8,7 @@ It is written as a jQuery plugin so you can really use it as a stand alone, very
 Usage: 
 
 Given a canvas on an HTML document, you can create a new instance of a Whiteboard by doing:
-
+   ```html
    <canvas id='drawingCanvas' />
    
    <script>
@@ -16,7 +16,7 @@ Given a canvas on an HTML document, you can create a new instance of a Whiteboar
           $('#drawingCanvas').Tablero();
           });
    </script>
-   
+   ```
 The above code alone, will turn your canvas element into a rudimentary painting tool.
 
 Some of the methods supported are:

@@ -31,6 +31,22 @@ As far as multiple users drawing on the same whiteboard, these are the methods s
 
     Tablero.draw(shape,user) --> draws the Shape on the Whiteboard. The user parameter simply identifies 
                                  who sent the image to the Whiteboard (via SignalR)
+                                 
+    The Shape object has these properties:
+    
+    Shape: {
+             LineWidth : int,
+             Color: string,
+             Coordinates : Point[]
+           }
+    
+    The Point object has these properties: 
+    
+    Point: {
+             X: int,
+             Y: int
+           }
+    
     Tablero.block(user) --> If you want to ignore updates from a user you would call this function.
     Tablero.unblock(user) --> This is to start "listening" again for any drawings done by the user.
     

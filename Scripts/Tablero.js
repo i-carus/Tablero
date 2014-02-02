@@ -113,9 +113,13 @@
         var context = canvas.getContext("2d");
         //we need to handle window resizes to accomodate for canvas width and height properly
         $(window).resize(function () {
+            var data = canvas.toDataURL();
+            var img = new Image();
+            img.src = data;
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
-            context.strokeStyle = color();            
+            context.strokeStyle = color();
+            context.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
         });
 
         $(this).on('mousedown touchstart', this.coordinates,function (e) {

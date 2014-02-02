@@ -53,11 +53,12 @@
             $.each(pc.getRemoteStreams(), function(index, value) {
                 value.stop();
             });
-            var remoteVideo = document.getElementById('remoteVideo');
-            var localVideo = document.getElementById('localVideo');
-            remoteVideo.src = '';
-            localVideo.src = '';
+            //var remoteVideo = document.getElementById('remoteVideo');
+            //var localVideo = document.getElementById('localVideo');
+            //remoteVideo.src = '';
+            //localVideo.src = '';
             $('#videoContainer').hide();
+            pc = new RTCPeerConnection(pc_config, pc_constraints);
         }
     };
 
@@ -109,11 +110,13 @@
 
                             }
                         });
+                        iceCandidates.length = 0;//clear the local copy as we already added it to the PC.
                         tableroHub.server.sendAnswer(JSON.stringify({ 'sdp': answer }), otherPeer);
                     });
                 });
             });
 
+            $('#videoContainer').show();
 
         }, function (error) {
             console.log('unable to get video going', error);
@@ -134,6 +137,7 @@
                 }
             });
             iceCandidates.length = 0; //Handshake done. Clear the ICE.
+            
         }, function (error) {
             console.log(error);
         });
@@ -176,8 +180,8 @@
         */
         pc.onaddstream = function (evt) {
             var remoteVideo = document.getElementById('remoteVideo');
-            $('#videoContainer').show();
             attachMediaStream(remoteVideo, evt.stream);
+            $('#videoContainer').show();
         };
 
 
@@ -277,10 +281,10 @@
         }
     });
 
-    //prevent scrolling on touch devides
-    //document.body.addEventListener('touchmove', function(event) {
-    //    event.preventDefault();
-    //}, false);
+    //prevent scrolling on the canvas on touch devides
+    $(document).on('touchmove', '#c', function (e) {
+        e.preventDefault();
+    });
 
     ///UI initialization of some widgets
     $('#c').width($('.container').width());

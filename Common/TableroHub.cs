@@ -16,7 +16,7 @@ namespace Tablero.Common
     {
 
         private static ConcurrentDictionary<string,string> groups = new  ConcurrentDictionary<string, string>();
-
+        private static ConcurrentDictionary<string,string> videoConfs = new ConcurrentDictionary<string, string>(); 
         #region connection_events
         public override Task OnConnected()
         {
@@ -69,9 +69,12 @@ namespace Tablero.Common
             string recipient = null;
             string sender = GetSenderNameFromConnectionId();
 
-            if (groups.TryGetValue(otherPeer.Trim(), out  recipient))
+            if (groups.TryGetValue(otherPeer.Trim(), out recipient))
+            {
                 Clients.Client(recipient).acceptOffer(message, sender);
-
+                videoConfs.AddOrUpdate(sender.Trim(), otherPeer.Trim(), (key, value) => otherPeer.Trim());
+            }
+            
         }
 
         /// <summary>
@@ -105,6 +108,27 @@ namespace Tablero.Common
 
             if (groups.TryGetValue(otherPeer.Trim(), out  recipient))
                 Clients.Client(recipient).acceptAnswer(message);
+        }
+
+        //Instructs the user doing video conferencing with the sender to hang up the call.
+        public void HangUp()
+        {
+            string sender = GetSenderNameFromConnectionId();
+            string otherEnd = "";
+
+            if (videoConfs.TryRemove(sender, out otherEnd))
+            {
+                Clients.Client(groups[otherEnd.Trim()]).hangUp();
+            }
+            else
+            {
+                //try finding by value
+                var otherPeer= videoConfs.FirstOrDefault(x => x.Value == sender);
+                Clients.Client(groups[otherPeer.Key.Trim()]).hangUp();
+                videoConfs.TryRemove(otherPeer.Key, out otherEnd);
+
+            }
+
         }
         #endregion
 
@@ -150,6 +174,8 @@ namespace Tablero.Common
         /// <param name="name"></param>
         public void GetConnectedUsers(string name)
         {
+            if (name!=null)
+                name = name.Trim();
             if (!Context.RequestCookies.ContainsKey("name"))
                 AddUserToList(name, null);//To account for mobile devices that don't send the cookies on the request
             BroadcastListOfUsers();
@@ -172,7 +198,11 @@ namespace Tablero.Common
         /// <returns></returns>
         private string GetSenderNameFromConnectionId()
         {
-            return (from item in groups where item.Value == this.Context.ConnectionId select item.Key).FirstOrDefault();
+            string result = (from item in groups where item.Value == this.Context.ConnectionId select item.Key).FirstOrDefault();
+            if (result != null)
+                result = result.Trim();
+            return result;
+
         }
 
         /// <summary>
@@ -184,8 +214,10 @@ namespace Tablero.Common
         /// <param name="cookie"></param>
         private void AddUserToList(string username, Cookie cookie)
         {
+            
             if (username != null)
             {
+                username = username.Trim();
                 cookie = new Cookie("name", username);
             }
 

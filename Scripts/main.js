@@ -5,6 +5,7 @@
     var videoRecipient = '';
     var pc_config = { "iceServers": [{ "url": "stun:stun.l.google.com:19302" }] };
     var pc_constraints = { "optional": [{ "DtlsSrtpKeyAgreement": true }] };
+    var pc = null;
 
     //var pc_config = {
     //    "iceServers": [{ "url": "stun:stun.l.google.com:19302" }, { "url": "stun:stun.l.google.com:19302" },
@@ -44,9 +45,22 @@
         });
     };
 
-    // Create an RTCPeerConnection via the polyfill (adapter.js).
-    var pc = new RTCPeerConnection(pc_config, pc_constraints);
-    //var pc = new RTCPeerConnection(null);
+    var hangUp = function () {
+        if (pc) {
+            $.each(pc.getLocalStreams(), function(index, value) {
+                value.stop();
+            });
+            $.each(pc.getRemoteStreams(), function(index, value) {
+                value.stop();
+            });
+            var remoteVideo = document.getElementById('remoteVideo');
+            var localVideo = document.getElementById('localVideo');
+            remoteVideo.src = '';
+            localVideo.src = '';
+            $('#videoContainer').hide();
+        }
+    };
+
     var iceCandidates = [];
 
     var video_constraints = {
@@ -85,14 +99,14 @@
             var localVideo = document.getElementById('localVideo');
             attachMediaStream(localVideo, localStream);
             pc.addStream(localStream);
-            $('#remoteTitle').html('<span class="glyphicon glyphicon-user"></span> '+otherPeer);
+            $('#remoteTitle').html('<span class="glyphicon glyphicon-user"></span> ' + otherPeer);
             pc.setRemoteDescription(new RTCSessionDescription(result.sdp), function () {
                 pc.createAnswer(function (answer) {
                     pc.setLocalDescription(answer, function () {
                         $.each(iceCandidates, function (index, value) {
                             if (value != undefined && value != null) {
                                 pc.addIceCandidate(new RTCIceCandidate(value));
-                                console.log(value);
+
                             }
                         });
                         tableroHub.server.sendAnswer(JSON.stringify({ 'sdp': answer }), otherPeer);
@@ -117,7 +131,6 @@
             $.each(iceCandidates, function (index, value) {
                 if (value != undefined && value != null) {
                     pc.addIceCandidate((value));
-                    console.log(value);
                 }
             });
             iceCandidates.length = 0; //Handshake done. Clear the ICE.
@@ -140,37 +153,51 @@
 
     };
 
-    /*
-    * This method fires always on the peer initiating the call.
-    * Store the ICE in a local array and add all of them as soon as you
-    * get the Answer from the remote peer, after you have called setRemoteDescription
-    */
-    pc.onicecandidate = function (evt) {
-        if (evt.candidate) {
-            iceCandidates.push(evt.candidate); //add it for now
-            tableroHub.server.sendCandidate(JSON.stringify({ 'candidate': evt.candidate }), videoRecipient);
-        }
-    };
 
-    /*
-    * Ok, we got remote video! attach it to the page. We are done!
-    */
-    pc.onaddstream = function (evt) {
-        console.log('onaddstream fired');
-        var remoteVideo = document.getElementById('remoteVideo');
-        $('#videoContainer').show();
-        attachMediaStream(remoteVideo, evt.stream);
-    };
+    // Create an RTCPeerConnection via the polyfill (adapter.js).
+    if (window.RTCPeerConnection) {
+        pc = new RTCPeerConnection(pc_config, pc_constraints);
+        //var pc = new RTCPeerConnection(null);
+
+        /*
+   * This method fires always on the peer initiating the call.
+   * Store the ICE in a local array and add all of them as soon as you
+   * get the Answer from the remote peer, after you have called setRemoteDescription
+   */
+        pc.onicecandidate = function (evt) {
+            if (evt.candidate) {
+                iceCandidates.push(evt.candidate); //add it for now
+                tableroHub.server.sendCandidate(JSON.stringify({ 'candidate': evt.candidate }), videoRecipient);
+            }
+        };
+
+        /*
+        * Ok, we got remote video! attach it to the page. We are done!
+        */
+        pc.onaddstream = function (evt) {
+            var remoteVideo = document.getElementById('remoteVideo');
+            $('#videoContainer').show();
+            attachMediaStream(remoteVideo, evt.stream);
+        };
 
 
-    pc.onremovestream = function (evt) {
-        console.log(evt);
-    };
+        pc.onremovestream = function (evt) {
+            console.log(evt);
+        };
+
+    }
+
 
     /*
     * Event handlers and initialization for the various widgets in the page
     */
 
+    $('#btnhangup').click(function () {
+
+        hangUp();
+        tableroHub.server.hangUp();
+        
+    });
 
     $('#ok-name').click(function () {
         name = $('#name-text').val();
@@ -242,6 +269,7 @@
 
     $(document).on('click', 'input.block:enabled', function () {
         var user = $(this).parent().text();
+
         if (this.checked) {
             tablero.unblock(user);
         } else {
@@ -267,8 +295,8 @@
         tablero.reset(sender);
     };
 
-    tableroHub.client.draw = function (shape) {
-        tablero.draw(shape);
+    tableroHub.client.draw = function (shape, sender) {
+        tablero.draw(shape, sender);
     };
 
     tableroHub.client.changeColor = function (color) {
@@ -279,11 +307,15 @@
         var content = '';
         var count = 0;
         $.each(users, function (index, value) {
-            content += $('<li/>').text(value.user + (value.connection_id == $.connection.hub.id ? ' (You)' : '')).append('<input class="block" type="checkbox" ' + (tablero.isUserIgnored(value.user) == false ? 'checked="checked" ' : '') + (value.connection_id == $.connection.hub.id ? ' disabled="disabled" ' : '') + ' "  />').append('  <i class="fa fa-video-camera ' + (value.connection_id == $.connection.hub.id ? ' disabled ' : '') + '"></i>').wrapInner('<span class="checkbox" />').wrapInner("<a/>")[0].outerHTML;
+            content += $('<li/>').text(value.user + (value.connection_id == $.connection.hub.id ? ' (You)' : '')).append('<input class="block" type="checkbox" ' + (tablero.isUserIgnored(value.user) == false ? 'checked="checked" ' : '') + (value.connection_id == $.connection.hub.id ? ' disabled="disabled" ' : '') + ' "  />').append('  <i style="cursor:pointer;" class="fa fa-video-camera ' + (value.connection_id == $.connection.hub.id ? ' disabled ' : '') + '"></i>').wrapInner('<span class="checkbox" />').wrapInner("<a/>")[0].outerHTML;
             count++;
         });
         $('#counter').text(count);
         $('#status').html(content);
+    };
+
+    tableroHub.client.hangUp = function() {
+        hangUp();
     };
 
 });

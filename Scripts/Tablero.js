@@ -44,21 +44,22 @@
             $(this).css('background-color', color);
         };
        
-        this.draw = function (shape,from) {
+        this.draw = function (shape, from) {
             if(!this.isUserIgnored(from))
               drawRemote(shape);
         };
 
         this.block = function (name) {
-            
+            if (name)
+                name = name.trim();
             if(!this.isUserIgnored(name))
                 ignore.push(name);
-           
         };
 
         this.unblock = function (name) {
-            ignore.splice($.inArray(name, ignore), 1);
-            
+            if (name)
+                name = name.trim();
+            ignore.splice($.inArray(name, ignore), 1);            
         };
         this.eraser = function () {
 

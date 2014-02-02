@@ -7,7 +7,7 @@ It is written as a jQuery plugin so you can really use it as a stand alone, very
 
 Usage: 
 
-Given a canvas on an HTML document, you can create a new instance of a Whiteboard by doing:
+Given a canvas on an HTML document, you can create a new instance of a Whiteboard (Tablero - in Spanish) by doing:
    ```html
    <canvas id='drawingCanvas' />
    

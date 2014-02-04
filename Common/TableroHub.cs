@@ -250,7 +250,7 @@ namespace Tablero.Common
             }
         }
         /// <summary>
-        /// Gets a new list of TURN and STUN servers from turnservers.com
+        /// Gets a new list of TURN and STUN servers from a third party 
         /// </summary>
         /// <returns></returns>
         private string GetNewTurns()

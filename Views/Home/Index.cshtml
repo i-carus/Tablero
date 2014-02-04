@@ -2,42 +2,64 @@
     ViewBag.Title = "Tablero";
 }
 
-
-<canvas id="c" style="border: 1px #000 solid; cursor: pointer; background-color: black;"></canvas>
-
-
-<div class="btn-toolbar" role="toolbar">
-
-    <div class="btn-group btn-group-sm">
-        <button id="pick-color" type="button" class="btn btn-default"><span class="fa fa-square " title="Pick a color"></span></button>
-        <div class="colorpalette" style="display: none;"></div>
+<div class="row">
+    <div class="col-md-12">
+        <canvas id="c" style="border: 1px #000 solid; cursor: pointer; background-color: black;"></canvas>
     </div>
-    <div class="btn-group btn-group-sm">
-        <button type="button" class="btn btn-default reset"><span class="glyphicon glyphicon-trash " data-toggle="tooltip" data-placement="bottom" title="Reset - erases everything" style="color: black;"></span></button>
-        <button type="button" class="btn btn-default eraser"><span class="fa fa-eraser " data-toggle="tooltip" data-placement="bottom" title="Eraser - increases line width" style="color: black;"></span></button>
-        <button type="button" class="btn btn-default export"><span class="glyphicon glyphicon-floppy-disk" data-toggle="tooltip" data-placement="bottom" title="Save drawing"></span></button>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="btn-toolbar" role="toolbar">
 
-        <div class="btn-group btn-group-sm">
-            <button type="button" class="btn btn-default">Background</button>
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                <span class="caret"></span>
-                <span class="sr-only">Toggle Dropdown</span>
-            </button>
-            <ul class="dropdown-menu" role="menu">
-                <li><a href="#" class="switch-back">White</a></li>
-                <li><a href="#" class="switch-back">Black</a></li>
+            <div class="btn-group btn-group-sm">
+                <button id="pick-color" type="button" class="btn btn-default"><span class="fa fa-square " title="Pick a color"></span></button>
+                <div class="colorpalette" style="display: none;"></div>
+            </div>
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-default reset"><span class="glyphicon glyphicon-trash " data-toggle="tooltip" data-placement="bottom" title="Reset - erases everything" style="color: black;"></span></button>
+                <button type="button" class="btn btn-default eraser"><span class="fa fa-eraser " data-toggle="tooltip" data-placement="bottom" title="Eraser - increases line width" style="color: black;"></span></button>
+                @*<button type="button" class="btn btn-default export"><span class="glyphicon glyphicon-floppy-disk" data-toggle="tooltip" data-placement="bottom" title="Save drawing"></span></button>*@
 
-            </ul>
-
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-default">Background</button>
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                        <span class="caret"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="#" class="switch-back">White</a></li>
+                        <li><a href="#" class="switch-back">Black</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-primary dropdown-toggle" title="Untick to mute the user" data-toggle="dropdown">
+                    Online: <span class="badge" id="counter">0</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" id="status">
+                </ul>
+            </div>
         </div>
     </div>
-    <div class="btn-group btn-group-sm">
-        <button type="button" class="btn btn-primary dropdown-toggle" title="Untick to mute the user" data-toggle="dropdown">
-            Online Users <span class="badge" id="counter">0</span>
-            <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" id="status">
-        </ul>
+</div>
+<div class="row" style="display: none;" id="videoContainer">
+    <div class="col-lg-4 col-lg-offset-1">
+
+        <h1><span class="glyphicon glyphicon-user"></span>You</h1>
+
+        <video id="localVideo" class="img-rounded" autoplay></video>
+    </div>
+    <div class="col-lg-2">
+        <div class="text-center">
+            <button type="button" id="btnhangup" class="btn btn-danger"><span class="glyphicon glyphicon-phone-alt"></span>Hang Up</button>
+        </div>
+    </div>
+    <div class="col-lg-4 col-lg-offset-1">
+
+        <h1 id="remoteTitle"><span class="glyphicon glyphicon-user"></span>Remote Video</h1>
+
+        <video id="remoteVideo" class="img-rounded" autoplay></video>
     </div>
 </div>
 <br />
@@ -61,26 +83,10 @@
     <!-- /.modal-dialog -->
 </div>
 <!-- /.modal -->
-<div class="container-fluid jumbotron" style="display: none;" id="videoContainer">
-    <div class="row ">
-        <div class="col-md-4 col-md-offset-1">
-            <div class="bs-callout bs-callout-danger">
-                <h4><span class="glyphicon glyphicon-user"></span>You</h4>
-            </div>
-            <video id="localVideo" class="img-rounded" autoplay></video>
-        </div>
-        <div class="col-md-2">
-            <div class="text-center"><button type="button" id="btnhangup" class="btn btn-danger"><span class="glyphicon glyphicon-phone-alt"></span> Hang Up</button></div>
-        </div>
-        <div class="col-md-4 col-md-offset-1">
-            <div class="bs-callout bs-callout-info">
-                <h4 id="remoteTitle"><span class="glyphicon glyphicon-user"></span> Remote Video</h4>
-            </div>
-            <video id="remoteVideo" class="img-rounded" autoplay></video>
-        </div>
-    </div>
-    
-</div>
+
+
+
+
 
 @section scripts
 {
@@ -90,6 +96,6 @@
     <!--Reference the autogenerated SignalR hub script. -->
     <script src="~/signalr/hubs"></script>
     <!-- Load the TURN Server API: -->
-  
+
 
 }

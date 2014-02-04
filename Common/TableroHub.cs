@@ -3,12 +3,16 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNet.SignalR;
 using Microsoft.Owin.Security.Provider;
 using Microsoft.SqlServer.Server;
+using Newtonsoft.Json;
+using Tablero.Models;
+using Cookie = Microsoft.AspNet.SignalR.Cookie;
 
 namespace Tablero.Common
 {
@@ -116,17 +120,23 @@ namespace Tablero.Common
             string sender = GetSenderNameFromConnectionId();
             string otherEnd = "";
 
+           
+
+
+
+            this.Clients.Caller.newTurns(GetNewTurns());
             if (videoConfs.TryRemove(sender, out otherEnd))
             {
                 Clients.Client(groups[otherEnd.Trim()]).hangUp();
+                Clients.Client(groups[otherEnd.Trim()]).newTurns(GetNewTurns());
             }
             else
             {
                 //try finding by value
                 var otherPeer= videoConfs.FirstOrDefault(x => x.Value == sender);
                 Clients.Client(groups[otherPeer.Key.Trim()]).hangUp();
+                Clients.Client(groups[otherPeer.Key.Trim()]).newTurns(GetNewTurns());
                 videoConfs.TryRemove(otherPeer.Key, out otherEnd);
-
             }
 
         }
@@ -241,6 +251,19 @@ namespace Tablero.Common
                     groups.AddOrUpdate(cookie.Value, this.Context.ConnectionId,
                         (key, value) => { return Context.ConnectionId; });
             }
+        }
+        /// <summary>
+        /// Gets a new list of TURN and STUN servers from some third-party vendor that provdes TURN servers
+        /// </summary>
+        /// <returns></returns>
+        private string GetNewTurns()
+        {
+            var wc = new WebClient();
+            var newTurns = wc.DownloadString("http://example.com?apiKey=somekey");
+
+            var turnRecords = JsonConvert.DeserializeObject<TurnRecords>(newTurns);
+
+            return turnRecords.BuildJson;
         }
 
         #endregion

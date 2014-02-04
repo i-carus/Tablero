@@ -3,31 +3,47 @@
     var tableroHub = $.connection.tableroHub;
     var name = $.cookie('name');
     var videoRecipient = '';
-    var pc_config = { "iceServers": [{ "url": "stun:stun.l.google.com:19302" }] };
-    var pc_constraints = { "optional": [{ "DtlsSrtpKeyAgreement": true }] };
+    
     var pc = null;
+    
+    var hookPCEvents = function () {
+        // Create an RTCPeerConnection via the polyfill (adapter.js).
+        if (window.RTCPeerConnection) {
+            /*
+            * This method fires always on the peer initiating the call.
+            * Store the ICE in a local array and add all of them as soon as you
+            * get the Answer from the remote peer, after you have called setRemoteDescription
+            */
+            pc.onicecandidate = function (evt) {
+                if (evt.candidate) {
+                    iceCandidates.push(evt.candidate); //add it for now
+                    tableroHub.server.sendCandidate(JSON.stringify({ 'candidate': evt.candidate }), videoRecipient);
+                }
+            };
 
-    //var pc_config = {
-    //    "iceServers": [{ "url": "stun:stun.l.google.com:19302" }, { "url": "stun:stun.l.google.com:19302" },
-    //        { "url": "stun:stun1.l.google.com:19302" },
-    //        { "url": "stun:stun2.l.google.com:19302" },
-    //        { "url": "stun:stun3.l.google.com:19302" },
-    //        { "url": "stun:stun4.l.google.com:19302" },
-    //        { "url": "stun:stun01.sipphone.com" },
-    //        { "url": "stun:stun.ekiga.net" },
-    //        { "url": "stun:stun.fwdnet.net" },
-    //        { "url": "stun:stun.ideasip.com" },
-    //        { "url": "stun:stun.iptel.org" },
-    //        { "url": "stun:stun.rixtelecom.se" },
-    //        { "url": "stun:stun.schlund.de" },
-    //        { "url": "stun:stunserver.org" },
-    //        { "url": "stun:stun.softjoys.com" },
-    //        { "url": "stun:stun.voiparound.com" },
-    //        { "url": "stun:stun.voipbuster.com" },
-    //        { "url": "stun:stun.voipstunt.com" },
-    //        { "url": "stun:stun.voxgratia.org" },
-    //        { "url": "stun:stun.xten.com" }]
-    //};
+            /*
+            * Ok, we got remote video! attach it to the page. We are done!
+            */
+            pc.onaddstream = function (evt) {
+
+                var remoteVideo = document.getElementById('remoteVideo');
+                attachMediaStream(remoteVideo, evt.stream);
+                $('#videoContainer').show();
+            };
+            pc.onremovestream = function (evt) {
+                console.log(evt);
+            };
+        }
+    };
+
+    // This callback function will give us the iceServers:
+    window.turnserversDotComAPI.iceServers(function (data) {
+        //pc = new RTCPeerConnection({ iceServers: data }, {});
+        if (window.RTCPeerConnection) {
+            pc = new RTCPeerConnection({ iceServers: data }, {});
+            hookPCEvents();
+        }
+    });
 
     ///Establishes the connection with the Hub
     var connect = function () {
@@ -47,20 +63,24 @@
 
     var hangUp = function () {
         if (pc) {
-            $.each(pc.getLocalStreams(), function(index, value) {
+            
+            $.each(pc.getLocalStreams(), function (index, value) {
                 value.stop();
             });
-            $.each(pc.getRemoteStreams(), function(index, value) {
+            $.each(pc.getRemoteStreams(), function (index, value) {
                 value.stop();
             });
-            //var remoteVideo = document.getElementById('remoteVideo');
-            //var localVideo = document.getElementById('localVideo');
-            //remoteVideo.src = '';
-            //localVideo.src = '';
+            
+            var remoteVideo = document.getElementById('remoteVideo');
+            var localVideo = document.getElementById('localVideo');
+            remoteVideo.src = '';
+            localVideo.src = '';
             $('#videoContainer').hide();
-            pc = new RTCPeerConnection(pc_config, pc_constraints);
+            pc.close();
         }
     };
+
+    
 
     var iceCandidates = [];
 
@@ -132,12 +152,12 @@
         var descrip = new RTCSessionDescription($.parseJSON(answer).sdp);
         pc.setRemoteDescription(descrip, function () {
             $.each(iceCandidates, function (index, value) {
-                if (value != undefined && value != null) {
-                    pc.addIceCandidate((value));
+                if (value) {
+                    pc.addIceCandidate(value);
                 }
             });
             iceCandidates.length = 0; //Handshake done. Clear the ICE.
-            
+
         }, function (error) {
             console.log(error);
         });
@@ -157,39 +177,16 @@
 
     };
 
+    /*
+    * After every call, we need to get a new set of TURN servers from the server side :-/
+    */
+    tableroHub.client.newTurns = function (data) {
+        var servers = ($.parseJSON(data));
+        pc = new RTCPeerConnection({ iceServers: servers }, {});
+        hookPCEvents();
+    };
 
-    // Create an RTCPeerConnection via the polyfill (adapter.js).
-    if (window.RTCPeerConnection) {
-        pc = new RTCPeerConnection(pc_config, pc_constraints);
-        //var pc = new RTCPeerConnection(null);
-
-        /*
-   * This method fires always on the peer initiating the call.
-   * Store the ICE in a local array and add all of them as soon as you
-   * get the Answer from the remote peer, after you have called setRemoteDescription
-   */
-        pc.onicecandidate = function (evt) {
-            if (evt.candidate) {
-                iceCandidates.push(evt.candidate); //add it for now
-                tableroHub.server.sendCandidate(JSON.stringify({ 'candidate': evt.candidate }), videoRecipient);
-            }
-        };
-
-        /*
-        * Ok, we got remote video! attach it to the page. We are done!
-        */
-        pc.onaddstream = function (evt) {
-            var remoteVideo = document.getElementById('remoteVideo');
-            attachMediaStream(remoteVideo, evt.stream);
-            $('#videoContainer').show();
-        };
-
-
-        pc.onremovestream = function (evt) {
-            console.log(evt);
-        };
-
-    }
+    
 
 
     /*
@@ -200,7 +197,7 @@
 
         hangUp();
         tableroHub.server.hangUp();
-        
+
     });
 
     $('#ok-name').click(function () {
@@ -318,7 +315,7 @@
         $('#status').html(content);
     };
 
-    tableroHub.client.hangUp = function() {
+    tableroHub.client.hangUp = function () {
         hangUp();
     };
 

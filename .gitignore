@@ -41,6 +41,7 @@ local.properties
 *.user
 *.sln.docstates
 
+
 # Build results
 
 [Dd]ebug/
@@ -130,7 +131,7 @@ publish/
 
 # NuGet Packages Directory
 ## TODO: If you have NuGet Package Restore enabled, uncomment the next line
-#packages/
+packages/
 
 # Windows Azure Build Output
 csx
@@ -175,6 +176,8 @@ ehthumbs.db
 
 # Folder config file
 Desktop.ini
+Web.config
+web.config
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/

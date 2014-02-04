@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
@@ -119,10 +120,6 @@ namespace Tablero.Common
         {
             string sender = GetSenderNameFromConnectionId();
             string otherEnd = "";
-
-           
-
-
 
             this.Clients.Caller.newTurns(GetNewTurns());
             if (videoConfs.TryRemove(sender, out otherEnd))
@@ -253,13 +250,13 @@ namespace Tablero.Common
             }
         }
         /// <summary>
-        /// Gets a new list of TURN and STUN servers from some third-party vendor that provdes TURN servers
+        /// Gets a new list of TURN and STUN servers from turnservers.com
         /// </summary>
         /// <returns></returns>
         private string GetNewTurns()
         {
             var wc = new WebClient();
-            var newTurns = wc.DownloadString("http://example.com?apiKey=somekey");
+            var newTurns = wc.DownloadString(string.Format("{0}?key={1}", ConfigurationManager.AppSettings["TURN_Servers_Provider"], ConfigurationManager.AppSettings["SecretAPIKey"]));
 
             var turnRecords = JsonConvert.DeserializeObject<TurnRecords>(newTurns);
 

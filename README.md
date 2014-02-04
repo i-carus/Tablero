@@ -54,7 +54,7 @@ As far as multiple users drawing on the same whiteboard, these are the methods s
 Live Demo
 ========
 
-You can see a live demo at http://marianasanchez.com - You can connect from 2 different browsers (IE support is lacking Video Conferencing but this is Microsoft's fault as they haven't done a thing to support WebRTC) and start drawing something on one of the browsers. Wha will happen is that all other clients connected to the website will immediately see what you draw. You can also have a 1 to 1 video conferecing by selecting the user from the list of users and clicnking on the video camera icon next to him. 
+You can see a live demo at http://marianasanchez.com - You can connect from 2 different browsers (IE support is lacking Video Conferencing but this is Microsoft's fault as they haven't done a thing to support WebRTC) and start drawing something on one of the browsers. Wha will happen is that all other clients connected to the website will immediately see what you draw. You can also have a 1 to 1 video conferecing by selecting the user from the list of users and clicking on the video camera icon next to him/her. 
 
 The app also supports "ignoring" updates from certain users so that in the event that you don't want to see what other people are drawing, you can uncheck the user from the list of users connected. 
 

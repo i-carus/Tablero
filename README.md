@@ -61,7 +61,7 @@ The app also supports "ignoring" updates from certain users so that in the event
 Why do this?
 =========
 
-I just a fun project to familiarize myself with jQuery plugin development and the Canvas API in particular but I also wanted to develop a tool that would allow me to teach basic math to my daughters when I am travelling so that I could put them excerises and see how they tackle each problem. 
+This is just a fun project to familiarize myself with jQuery plugin development and the Canvas API in particular but I also wanted to develop a tool that would allow me to teach basic math to my daughters when I am traveling. The idea is that I can ask them to solve a math problem and see in real time, every step they take to arrive at the answer. The video conferencing also allows me to intervene and explain how to solve it.  
 
 
 

@@ -102,6 +102,12 @@
         connect();
     }
 
+    //source: http://bonsaiden.github.io/JavaScript-Garden/#types
+    function is(type, obj) {
+        var clas = Object.prototype.toString.call(obj).slice(8, -1);
+        return obj !== undefined && obj !== null && clas === type;
+    }
+
     /*
     *  WebRTC-related methods to initiate a video-conferencing call.
     */
@@ -152,8 +158,13 @@
         var descrip = new RTCSessionDescription($.parseJSON(answer).sdp);
         pc.setRemoteDescription(descrip, function () {
             $.each(iceCandidates, function (index, value) {
+                
                 if (value) {
-                    pc.addIceCandidate(value);
+
+                    if (is('RTCIceCandidate', value))
+                        pc.addIceCandidate(value);
+                    else
+                        pc.addIceCandidate(new RTCIceCandidate(value));
                 }
             });
             iceCandidates.length = 0; //Handshake done. Clear the ICE.
